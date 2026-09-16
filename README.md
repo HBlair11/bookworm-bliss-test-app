@@ -13,6 +13,12 @@ The old The Livre Magicae application remains independent. Bookworm Bliss has a 
 
 ---
 
+## Latest foundation fix
+
+**Phase 1 Fix 02** resolves missing Room DAO/theme APIs found by the GitHub Actions Kotlin compiler after Fix 01. `BookDao` now provides the metadata-update operations used by Book Details and EPUB metadata refresh, and `ReaderTheme.byId(...)` is the centralized persisted-theme resolver used by the reader and app shell. The fix was applied without reintroducing any of the temporarily removed feature layers.
+
+A full Gradle Android build was attempted in the development environment, but Gradle 8.9 could not be downloaded because external access to `services.gradle.org` was unavailable. Therefore this release does **not** claim a locally successful Android build; GitHub Actions remains the authoritative build validation for this environment.
+
 ## Current development stage
 
 ### Phase 1 — Foundation Reset

@@ -44,6 +44,82 @@ interface BookDao {
     @Update
     suspend fun update(book: BookEntity)
 
+    @Query("""
+        UPDATE books
+        SET title = :title,
+            author = :author,
+            series = :series,
+            series_index = :seriesIndex,
+            language = :language,
+            publisher = :publisher,
+            description = :description,
+            identifier = :identifier,
+            publish_year = :publishYear,
+            subject_tags = :subjectTags,
+            sort_title = :sortTitle,
+            sort_author = :sortAuthor,
+            source_uri = :sourceUri,
+            source_filename = :sourceFilename,
+            metadata_edited = 1,
+            modified_date = CAST(strftime('%s', 'now') AS INTEGER) * 1000
+        WHERE id = :id
+    """)
+    suspend fun updateMetadataOnly(
+        id: Long,
+        title: String,
+        author: String,
+        series: String?,
+        seriesIndex: Double?,
+        language: String?,
+        publisher: String?,
+        description: String?,
+        identifier: String?,
+        publishYear: Int?,
+        subjectTags: String?,
+        sourceUri: String?,
+        sourceFilename: String?,
+        sortTitle: String,
+        sortAuthor: String,
+    )
+
+    @Query("""
+        UPDATE books
+        SET title = :title,
+            author = :author,
+            series = :series,
+            series_index = :seriesIndex,
+            language = :language,
+            publisher = :publisher,
+            description = :description,
+            identifier = :identifier,
+            publish_year = :publishYear,
+            subject_tags = :subjectTags,
+            source_uri = :sourceUri,
+            source_filename = :sourceFilename,
+            sort_title = :sortTitle,
+            sort_author = :sortAuthor,
+            metadata_edited = 0,
+            modified_date = CAST(strftime('%s', 'now') AS INTEGER) * 1000
+        WHERE id = :id
+    """)
+    suspend fun updateMetadataFromParser(
+        id: Long,
+        title: String,
+        author: String,
+        series: String?,
+        seriesIndex: Double?,
+        language: String?,
+        publisher: String?,
+        description: String?,
+        identifier: String?,
+        publishYear: Int?,
+        subjectTags: String?,
+        sourceUri: String?,
+        sourceFilename: String?,
+        sortTitle: String,
+        sortAuthor: String,
+    )
+
     @Delete
     suspend fun delete(book: BookEntity)
 

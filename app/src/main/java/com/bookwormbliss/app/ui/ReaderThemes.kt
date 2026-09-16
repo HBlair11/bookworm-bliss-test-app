@@ -83,6 +83,10 @@ data class ReaderTheme(
             needsInkOverride = true,
         )
 
+        /** Resolve a persisted theme id, falling back safely to the default theme. */
+        fun byId(id: String?): ReaderTheme =
+            ALL.firstOrNull { it.id.equals(id, ignoreCase = true) } ?: IVORY
+
         /** Ordered list shown in the Theme dropdown. Edit order here. */
         val ALL: List<ReaderTheme> = listOf(
             IVORY,
