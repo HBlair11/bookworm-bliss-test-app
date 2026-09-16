@@ -1,3 +1,1 @@
-# Keep default ProGuard rules.
--keep class com.bookwormbliss.app.data.** { *; }
--keepattributes *Annotation*
+# The Bookworm Bliss keeps release shrinking conservative until feature modules stabilize.
