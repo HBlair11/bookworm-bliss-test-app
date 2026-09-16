@@ -162,7 +162,7 @@ class ReaderWebRenderer(
     }
 
     private fun injectCss(html: String, css: String): String {
-        val style = "<style id="bookworm-reader-style">$css</style>"
+        val style = "<style id=\"bookworm-reader-style\">$css</style>"
         val head = Regex("(?i)<head[^>]*>").find(html)
         return if (head != null) {
             html.substring(0, head.range.last + 1) + style + html.substring(head.range.last + 1)
