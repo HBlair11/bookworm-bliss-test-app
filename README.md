@@ -350,7 +350,7 @@ The source archive does **not** contain the private keystore material. Its confi
 
 - debug builds use `~/.android/debug.keystore`
 - standard Android debug keystore credentials are configured
-- GitHub Actions injects the existing `EPUB_APP_KEYSTORE_BASE64` secret into that location
+- GitHub Actions validates the existing `EPUB_APP_KEYSTORE_BASE64` secret before using it; an invalid/incompatible secret is ignored so the debug build can fall back to Gradle's generated debug keystore
 
 The same debug signing key can therefore continue to be supplied for local/CI debug builds.
 

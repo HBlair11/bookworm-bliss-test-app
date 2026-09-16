@@ -127,16 +127,38 @@ jobs:
       # Inject Permanent Debug Keystore
       # ----------------------------------------------------------
 
-      - name: Inject permanent debug keystore
+      - name: Install permanent debug keystore when valid
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.EPUB_APP_KEYSTORE_BASE64 }}
         run: |
           set -e
           mkdir -p ~/.android
-          echo "$KEYSTORE_BASE64" | base64 --decode > ~/.android/debug.keystore
-          chmod 600 ~/.android/debug.keystore
-          echo "Permanent debug keystore installed."
+
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No permanent debug keystore secret is configured."
+            echo "Gradle will generate/use the standard local debug keystore."
+            exit 0
+          fi
+
+          if ! echo "$KEYSTORE_BASE64" | base64 --decode > ~/.android/debug.keystore.tmp 2>/dev/null; then
+            echo "::warning::EPUB_APP_KEYSTORE_BASE64 is not valid base64. Ignoring it and allowing Gradle to use a generated debug keystore."
+            rm -f ~/.android/debug.keystore.tmp ~/.android/debug.keystore
+            exit 0
+          fi
+
+          chmod 600 ~/.android/debug.keystore.tmp
+
+          if keytool -list -keystore ~/.android/debug.keystore.tmp \
+              -storepass android \
+              -alias androiddebugkey >/dev/null 2>&1; then
+            mv ~/.android/debug.keystore.tmp ~/.android/debug.keystore
+            chmod 600 ~/.android/debug.keystore
+            echo "Permanent debug keystore installed and validated."
+          else
+            echo "::warning::EPUB_APP_KEYSTORE_BASE64 decoded to an invalid/incompatible debug keystore. Ignoring it and allowing Gradle to generate a standard debug keystore."
+            rm -f ~/.android/debug.keystore.tmp ~/.android/debug.keystore
+          fi
 
       # ----------------------------------------------------------
       # Build APK

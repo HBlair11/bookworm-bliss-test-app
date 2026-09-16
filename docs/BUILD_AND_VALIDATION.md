@@ -54,6 +54,6 @@ The existing permanent debug-key mechanism was inspected during the Phase 1 rese
 
 - The source ZIP does not contain the keystore material.
 - `app/build.gradle.kts` explicitly uses `~/.android/debug.keystore` with the standard Android debug keystore credentials.
-- CI installs the repository's existing `EPUB_APP_KEYSTORE_BASE64` secret as `~/.android/debug.keystore`.
+- CI validates the repository's existing `EPUB_APP_KEYSTORE_BASE64` secret before installing it as `~/.android/debug.keystore`; if the secret is missing, malformed, or incompatible, CI removes it and allows Gradle to generate a standard debug keystore instead.
 
 The key material itself cannot be verified from the source ZIP because it is intentionally supplied by the local machine/GitHub secret. The configuration is preserved so the same debug certificate can be reused. Because Bookworm Bliss uses a different application ID, it can be installed beside The Livre Magicae.
