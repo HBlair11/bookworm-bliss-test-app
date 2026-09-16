@@ -23,6 +23,7 @@ class ReaderWebRenderer(
 ) {
     private var destroyed = false
     private var chapterReadyCallback: ((Int, Float) -> Unit)? = null
+    private var chapterErrorCallback: ((String) -> Unit)? = null
 
     init {
         configure()
@@ -50,8 +51,18 @@ class ReaderWebRenderer(
 
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
+                chapterErrorCallback = null
                 chapterReadyCallback?.invoke(currentChapterIndex, pendingRatio)
                 chapterReadyCallback = null
+            }
+
+            @Suppress("DEPRECATION")
+            override fun onReceivedError(view: WebView, errorCode: Int, description: String?, failingUrl: String?) {
+                super.onReceivedError(view, errorCode, description, failingUrl)
+                chapterReadyCallback = null
+                val callback = chapterErrorCallback
+                chapterErrorCallback = null
+                callback?.invoke(description?.takeIf { it.isNotBlank() } ?: "WebView error $errorCode")
             }
         }
     }
@@ -70,19 +81,29 @@ class ReaderWebRenderer(
         alignment: String,
         hyphenation: Boolean,
         onReady: (spineIndex: Int, ratio: Float) -> Unit,
+        onError: (String) -> Unit,
     ) {
         if (destroyed) return
-        val chapter = document.chapter(position.spineIndex) ?: return
-        val bytes = resolver.resolve(chapter.href)?.use { it.readBytes() } ?: return
-        val html = bytes.toString(Charsets.UTF_8)
-        currentChapterIndex = position.spineIndex
-        pendingRatio = position.offsetRatio.coerceIn(0f, 1f)
-        chapterReadyCallback = onReady
+        try {
+            val chapter = document.chapter(position.spineIndex)
+                ?: throw IllegalStateException("Reader chapter ${position.spineIndex + 1} is unavailable.")
+            val bytes = resolver.resolve(chapter.href)?.use { it.readBytes() }
+                ?: throw IllegalStateException("Reader content could not be loaded: ${chapter.href}")
+            val html = bytes.toString(Charsets.UTF_8)
+            currentChapterIndex = position.spineIndex
+            pendingRatio = position.offsetRatio.coerceIn(0f, 1f)
+            chapterReadyCallback = onReady
+            chapterErrorCallback = onError
 
-        val baseUrl = EpubResourceResolver.baseUrl(bookId, chapter.href)
-        val css = buildReaderCss(theme, marginDp, fontSizeSp, lineHeight, fontFamily, alignment, hyphenation)
-        val documentHtml = injectCss(html, css)
-        webView.loadDataWithBaseURL(baseUrl, documentHtml, "text/html", "UTF-8", baseUrl)
+            val baseUrl = EpubResourceResolver.baseUrl(bookId, chapter.href)
+            val css = buildReaderCss(theme, marginDp, fontSizeSp, lineHeight, fontFamily, alignment, hyphenation)
+            val documentHtml = injectCss(html, css)
+            webView.loadDataWithBaseURL(baseUrl, documentHtml, "text/html", "UTF-8", baseUrl)
+        } catch (e: Exception) {
+            chapterReadyCallback = null
+            chapterErrorCallback = null
+            onError(e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName)
+        }
     }
 
     fun setPositionRatio(ratio: Float, onApplied: ((Float, Int) -> Unit)? = null) {
@@ -154,6 +175,7 @@ class ReaderWebRenderer(
         if (destroyed) return
         destroyed = true
         chapterReadyCallback = null
+        chapterErrorCallback = null
         webView.stopLoading()
         webView.webViewClient = WebViewClient()
         webView.loadUrl("about:blank")

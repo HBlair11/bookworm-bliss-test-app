@@ -153,19 +153,26 @@ class ReaderActivity : AppCompatActivity() {
             return
         }
         lifecycleScope.launch {
-            val loaded = withContext(Dispatchers.IO) { repository.getBook(id) }
-            if (loaded == null) {
-                finish()
-                return@launch
+            try {
+                val loaded = withContext(Dispatchers.IO) { repository.getBook(id) }
+                if (loaded == null) {
+                    finish()
+                    return@launch
+                }
+                book = loaded
+                position = ReaderDocumentPosition(
+                    loaded.spineIndex,
+                    loaded.scrollRatio,
+                ).normalized()
+                binding.tvBookTitle.text = loaded.title
+                binding.tvAuthorSeries.text = buildAuthorSeries(loaded)
+                loadDocument(loaded)
+            } catch (e: Exception) {
+                showError(
+                    "The book could not be opened.\n" +
+                            (e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName)
+                )
             }
-            book = loaded
-            position = ReaderDocumentPosition(
-                loaded.spineIndex,
-                loaded.scrollRatio,
-            ).normalized()
-            binding.tvBookTitle.text = loaded.title
-            binding.tvAuthorSeries.text = buildAuthorSeries(loaded)
-            loadDocument(loaded)
         }
     }
 
@@ -178,12 +185,19 @@ class ReaderActivity : AppCompatActivity() {
             return
         }
 
-        document = ReaderDocument(parsed)
-        position = position.copy(spineIndex = position.spineIndex.coerceIn(0, parsed.spine.lastIndex))
-        resolver = EpubResourceResolver(parsed.file)
-        renderer = ReaderWebRenderer(binding.webView, loaded.id, resolver!!)
-        (binding.tocList.adapter as? TocAdapter)?.submitList(parsed.toc)
-        renderPosition(position)
+        try {
+            document = ReaderDocument(parsed)
+            position = position.copy(spineIndex = position.spineIndex.coerceIn(0, parsed.spine.lastIndex))
+            resolver = EpubResourceResolver(parsed.file)
+            renderer = ReaderWebRenderer(binding.webView, loaded.id, resolver!!)
+            (binding.tocList.adapter as? TocAdapter)?.submitList(parsed.toc)
+            renderPosition(position)
+        } catch (e: Exception) {
+            showError(
+                "The reader could not be initialized.\n" +
+                        (e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName)
+            )
+        }
     }
 
     private fun renderPosition(target: ReaderDocumentPosition) {
@@ -202,6 +216,12 @@ class ReaderActivity : AppCompatActivity() {
             fontFamily = prefs.font,
             alignment = prefs.align,
             hyphenation = prefs.hyphenation,
+            onError = { message ->
+                runOnUiThread {
+                    loading = false
+                    showError("The reader could not open this chapter.\n$message")
+                }
+            },
         ) { spineIndex, requestedRatio ->
             position = ReaderDocumentPosition(spineIndex, requestedRatio)
             renderer?.setPositionRatio(requestedRatio) { applied, count ->
