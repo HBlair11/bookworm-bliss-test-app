@@ -9,7 +9,7 @@ import android.widget.*
 import com.bookwormbliss.app.R
 object Ui {
     fun dp(c:Context,n:Int)= (n*c.resources.displayMetrics.density).toInt()
-    fun text(c:Context,s:String,size:Float=14f,bold:Boolean=false)=TextView(c).apply{text=s;textSize=size;setTextColor(Color.rgb(90,70,80));if(bold)setTypeface(typeface,1);setPadding(dp(c,4),dp(c,4),dp(c,4),dp(c,4))}
+    fun text(c:Context,s:String,size:Number=14f,bold:Boolean=false)=TextView(c).apply{text=s;textSize=size.toFloat();setTextColor(Color.rgb(90,70,80));if(bold)setTypeface(typeface,1);setPadding(dp(c,4),dp(c,4),dp(c,4),dp(c,4))}
     fun button(c:Context,s:String,onClick:()->Unit)=Button(c).apply{text=s;textSize=12f;setTextColor(Color.WHITE);setBackgroundColor(c.getColor(R.color.app_primary));setOnClickListener{onClick()};minHeight=dp(c,44)}
     fun card(c:Context)=LinearLayout(c).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(c,12),dp(c,12),dp(c,12),dp(c,12));background=GradientDrawable().apply{setColor(Color.WHITE);cornerRadius=dp(c,16).toFloat();setStroke(dp(c,1),c.getColor(R.color.app_divider))}}
     fun row(c:Context)=LinearLayout(c).apply{orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL}
