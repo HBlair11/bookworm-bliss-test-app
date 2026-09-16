@@ -216,22 +216,23 @@ class ReaderActivity : AppCompatActivity() {
             fontFamily = prefs.font,
             alignment = prefs.align,
             hyphenation = prefs.hyphenation,
+            onReady = { spineIndex, requestedRatio ->
+                position = ReaderDocumentPosition(spineIndex, requestedRatio)
+                renderer?.setPositionRatio(requestedRatio) { applied, count ->
+                    loading = false
+                    position = position.copy(offsetRatio = applied)
+                    chapterPageCount = count
+                    updatePositionUi()
+                    persistPosition()
+                }
+            },
             onError = { message ->
                 runOnUiThread {
                     loading = false
                     showError("The reader could not open this chapter.\n$message")
                 }
             },
-        ) { spineIndex, requestedRatio ->
-            position = ReaderDocumentPosition(spineIndex, requestedRatio)
-            renderer?.setPositionRatio(requestedRatio) { applied, count ->
-                loading = false
-                position = position.copy(offsetRatio = applied)
-                chapterPageCount = count
-                updatePositionUi()
-                persistPosition()
-            }
-        }
+        )
         binding.webView.setBackgroundColor(ReaderTheme.byId(prefs.theme).bgColor)
         binding.tvPageIndicator.setTextColor(ReaderTheme.byId(prefs.theme).inkColor)
         binding.tvPageIndicator.visibility = View.VISIBLE
