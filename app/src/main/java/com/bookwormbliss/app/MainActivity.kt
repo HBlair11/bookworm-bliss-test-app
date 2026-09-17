@@ -124,7 +124,7 @@ class MainActivity : Activity() {
             elevation = Ui.dp(this@MainActivity, 1).toFloat()
         }
         val menu = iconButton("☰", "Open navigation") { openDrawer() }
-        bar.addView(menu, LinearLayout.LayoutParams(Ui.dp(this, 48), -1))
+        bar.addView(menu, LinearLayout.LayoutParams(Ui.dp(this@MainActivity, 48), -1))
         val title = Ui.text(this, titleFor(name), 17f, true).apply { typeface = Typeface.create("serif", Typeface.BOLD) }
         bar.addView(title, LinearLayout.LayoutParams(0, -1, 1f))
         if (name != "recent") {
@@ -135,7 +135,7 @@ class MainActivity : Activity() {
             bar.addView(iconButton("☷", "List view") { setGridPreference(false); show(name) }, LinearLayout.LayoutParams(Ui.dp(this, 44), -1))
             bar.addView(iconButton("⇅", "Sort books") { showSortMenu(itAnchor = bar) }, LinearLayout.LayoutParams(Ui.dp(this, 44), -1))
         }
-        bar.addView(iconButton("＋", "Add EPUB") { startImport() }, LinearLayout.LayoutParams(Ui.dp(this, 48), -1))
+        bar.addView(iconButton("＋", "Add EPUB") { startImport() }, LinearLayout.LayoutParams(Ui.dp(this@MainActivity, 48), -1))
         return bar
     }
 
@@ -151,13 +151,13 @@ class MainActivity : Activity() {
         val panel = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.WHITE) }
         val head = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; setPadding(Ui.dp(this@MainActivity, 18), Ui.dp(this@MainActivity, 22), Ui.dp(this@MainActivity, 16), Ui.dp(this@MainActivity, 18))
-            background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(getColor(R.color.app_surface_soft), getColor(R.color.accent)))
+            background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(getColor(R.color.app_surface_soft), getColor(R.color.app_accent)))
         }
         val brand = Ui.row(this)
         brand.addView(Ui.text(this, "BB", 15f, true).apply { gravity = Gravity.CENTER; setTextColor(Color.WHITE); background = roundBg(getColor(R.color.app_primary), 10f) }, LinearLayout.LayoutParams(Ui.dp(this, 38), Ui.dp(this, 38)))
-        brand.addView(Ui.text(this, "The Bookworm Bliss", 18f, true).apply { setPadding(Ui.dp(this, 10), 0, 0, 0) }, LinearLayout.LayoutParams(0, -2, 1f))
+        brand.addView(Ui.text(this, "The Bookworm Bliss", 18f, true).apply { setPadding(Ui.dp(this@MainActivity, 10), 0, 0, 0) }, LinearLayout.LayoutParams(0, -2, 1f))
         head.addView(brand)
-        head.addView(Ui.text(this, "Offline EPUB Bookshelf & Reader", 11f).apply { setTextColor(getColor(R.color.app_text_secondary)); setPadding(Ui.dp(this, 48), 0, 0, 0) })
+        head.addView(Ui.text(this, "Offline EPUB Bookshelf & Reader", 11f).apply { setTextColor(getColor(R.color.app_text_secondary)); setPadding(Ui.dp(this@MainActivity, 48), 0, 0, 0) })
         panel.addView(head)
 
         val items = listOf(
@@ -176,7 +176,7 @@ class MainActivity : Activity() {
                 background = roundBg(getColor(if (active) R.color.app_surface_soft else android.R.color.transparent), 12f)
                 setOnClickListener { drawer?.dismiss(); show(id) }
             }
-            nav.addView(row, LinearLayout.LayoutParams(-1, Ui.dp(this, 48)).apply { bottomMargin = Ui.dp(this@MainActivity, 3) })
+            nav.addView(row, LinearLayout.LayoutParams(-1, Ui.dp(this@MainActivity, 48)).apply { bottomMargin = Ui.dp(this@MainActivity, 3) })
         }
         scroll.addView(nav); panel.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         val foot = Ui.text(this, "v1  •  100% Offline  •  Private", 10f).apply { setTextColor(getColor(R.color.app_text_secondary)); setPadding(Ui.dp(this@MainActivity, 16), Ui.dp(this@MainActivity, 12), Ui.dp(this@MainActivity, 16), Ui.dp(this@MainActivity, 14)) }
@@ -490,7 +490,7 @@ class MainActivity : Activity() {
     }
     private fun restoreScrollPosition(){root.post{val shell=root.getChildAt(0);if(shell is ViewGroup){val body=shell.getChildAt(1);if(body is ScrollView)body.scrollTo(0,scrollPositions[screen]?:0)}}}
     private fun primaryButton(text:String,onClick:()->Unit)=Ui.button(this,text,onClick)
-    private fun outlineButton(text:String,onClick:()->Unit)=Button(this).apply{text=text;textSize=12f;setTextColor(getColor(R.color.app_text_primary));background=roundBg(Color.WHITE,14f);setOnClickListener{onClick()};minHeight=Ui.dp(this@MainActivity,44)}
+    private fun outlineButton(text:String,onClick:()->Unit)=Button(this).apply{this.text=text;textSize=12f;setTextColor(getColor(R.color.app_text_primary));background=roundBg(Color.WHITE,14f);setOnClickListener{onClick()};minHeight=Ui.dp(this@MainActivity,44)}
     private fun roundBg(color:Int,radius:Float)=GradientDrawable().apply{setColor(color);cornerRadius=Ui.dp(this@MainActivity,radius.toInt()).toFloat();if(color==Color.WHITE)setStroke(Ui.dp(this@MainActivity,1),getColor(R.color.app_divider))}
     private fun themeBackground(theme:String)=when(theme){"ivory"->"#FFFFFF";"nordic_eco"->"#E8EFE9";"candlelight"->"#E8D3A7";"onyx"->"#000000";"midnight_slate"->"#1A1B1E";else->"#F1E3D3"}
 }
