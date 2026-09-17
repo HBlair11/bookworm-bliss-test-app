@@ -151,7 +151,7 @@ class MainActivity : Activity() {
         val panel = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.WHITE) }
         val head = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; setPadding(Ui.dp(this@MainActivity, 18), Ui.dp(this@MainActivity, 22), Ui.dp(this@MainActivity, 16), Ui.dp(this@MainActivity, 18))
-            background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(getColor(R.color.app_surface_soft), getColor(R.color.app_light_accent)))
+            background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(getColor(R.color.app_surface_soft), getColor(R.color.accent)))
         }
         val brand = Ui.row(this)
         brand.addView(Ui.text(this, "BB", 15f, true).apply { gravity = Gravity.CENTER; setTextColor(Color.WHITE); background = roundBg(getColor(R.color.app_primary), 10f) }, LinearLayout.LayoutParams(Ui.dp(this, 38), Ui.dp(this, 38)))
@@ -419,7 +419,7 @@ class MainActivity : Activity() {
             progressOverlay?.let { root.removeView(it) }; progressOverlay=null
             lastAddedIds=outcome.added.map{it.id}
             if (outcome.added.isNotEmpty()) show(screen)
-            val text = when { outcome.added.isNotEmpty() -> "${outcome.added.size} new ${if(outcome.added.size==1)"book" else "books"} added"; outcome.duplicates>0 -> "No new books added • ${outcome.duplicates} duplicate${if(outcome.duplicates==1)"" else "s"}"; else -> "No new books added" }
+            var text = when { outcome.added.isNotEmpty() -> "${outcome.added.size} new ${if(outcome.added.size==1)"book" else "books"} added"; outcome.duplicates>0 -> "No new books added • ${outcome.duplicates} duplicate${if(outcome.duplicates==1)"" else "s"}"; else -> "No new books added" }
             showSnackbar(text, outcome.added.isNotEmpty())
             if (outcome.failures.isNotEmpty()) mainHandler.postDelayed({ AlertDialog.Builder(this).setTitle("${label}: some files skipped").setMessage(outcome.failures.joinToString("\n\n")).setPositiveButton("OK",null).show() }, 500)
         }, delay)
