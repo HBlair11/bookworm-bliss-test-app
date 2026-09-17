@@ -7,15 +7,15 @@ plugins {
 }
 
 android {
-    namespace = "com.epubreader.app"
+    namespace = "com.bookwormbliss.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.epubreader.app"
+        applicationId = "com.bookwormbliss.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 37
-        versionName = "1.36"
+        versionCode = 1
+        versionName = "1.0"
         vectorDrawables { useSupportLibrary = true }
     }
 

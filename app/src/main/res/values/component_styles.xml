@@ -86,6 +86,9 @@
          ============================================================
     -->
 
+    <!-- Base parent style (required for dot-notation children) -->
+    <style name="Widget.Livre.TextView" />
+
     <!-- Screen title -->
     <style name="Widget.Livre.TextView.ScreenTitle">
         <item name="android:layout_width">match_parent</item>
@@ -123,6 +126,9 @@
          CONTAINERS
          ============================================================
     -->
+
+    <!-- Base parent style (required for dot-notation children) -->
+    <style name="Widget.Livre.Container" />
 
     <!-- Screen root container with standard padding -->
     <style name="Widget.Livre.Container.Screen">

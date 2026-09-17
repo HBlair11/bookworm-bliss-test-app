@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">The Livre Magicae</string>
+    <string name="app_name">The Bookworm Bliss</string>
 
     <string name="continue_reading">Continue reading</string>
     <string name="home_continue_label">Continue Reading</string>
@@ -46,11 +46,77 @@
     <string name="settings_scanned_folder">Scanned folder</string>
     <string name="settings_reader_theme">Reader theme</string>
     <string name="settings_about">About</string>
-    <string name="settings_about_detail">The Livre Magicae · Epub Reader</string>
+    <string name="settings_about_detail">The Bookworm Bliss · Epub Reader</string>
 
     <string name="settings_keep_screen_on">Screen On</string>
     <string name="settings_keep_screen_on_summary">Keep the screen on for 10 minutes longer than your current system setting.</string>
 
+    <!-- New Settings Sections (translated from web app) -->
+    <string name="settings_app_theme">App Theme</string>
+    <string name="settings_app_theme_summary">Choose between Original and Pastel color schemes</string>
+    <string name="settings_theme_original">Original</string>
+    <string name="settings_theme_pastel">Pastel</string>
+
+    <string name="settings_reading_goal">Daily Reading Goal</string>
+    <string name="settings_reading_goal_summary">Set a gentle daily reading milestone to celebrate your reading habit without high-pressure streaks.</string>
+    <string name="settings_goal_minutes">Target Minutes per Day</string>
+    <string name="settings_goal_show_stats">Show Goal on Stats Dashboard</string>
+    <string name="settings_goal_show_stats_summary">Displays your daily goal ring and progress</string>
+
+    <string name="settings_reader_color_theme">Reader Color Theme</string>
+
+    <string name="settings_typography">Typography &amp; Sizing</string>
+
+    <string name="settings_backup_restore">Full Backup &amp; Restore</string>
+    <string name="settings_backup_summary">Create a complete JSON export of your library, reading progress, highlights, bookmarks, and sessions. Restore on any device without cloud accounts.</string>
+    <string name="settings_export_backup">Export Full Library Backup (.json)</string>
+    <string name="settings_import_backup">Import Library Backup (.json)</string>
+    <string name="settings_restore_mode">Restore Mode:</string>
+    <string name="settings_restore_merge">Merge (Safe)</string>
+    <string name="settings_restore_replace">Replace (Wipe &amp; Restore)</string>
+
+    <string name="settings_maintenance">Maintenance &amp; Search History</string>
+    <string name="settings_clear_search_history">Clear Search History</string>
+    <string name="settings_reload_samples">Reload Sample Books</string>
+
+    <string name="settings_privacy_title">Privacy Guarantee &amp; Architecture</string>
+    <string name="settings_privacy_body">The Bookworm Bliss operates entirely offline. It does not contain tracking, analytics, user accounts, advertisements, or background network calls. All books, reading sessions, bookmarks, and vocabulary history are stored exclusively on your device.</string>
+    <string name="settings_privacy_note1">• WordNet® 3.0 Dictionary: Copyright 2006 by Princeton University.</string>
+    <string name="settings_privacy_note2">• CSS Multi-Column Pagination Engine with responsive column breaking.</string>
+    <string name="settings_privacy_note3">• Reader engine with format-agnostic contracts.</string>
+
+    <string name="settings_reset_appearance">Reset Appearance</string>
+
+    <string name="settings_backup_success">Backup exported successfully</string>
+    <string name="settings_restore_success">Library restored successfully</string>
+    <string name="settings_restore_failed">Failed to restore: %1$s</string>
+    <string name="settings_search_history_cleared">Search history cleared</string>
+    <string name="settings_theme_changed">Theme changed. Restart app to apply fully.</string>
+
+    <string name="reading_nook_title">Reading Nook</string>
+    <string name="reading_nook_open">Open Reading Nook</string>
+    <string name="reading_nook_workspace">Reading Nook Workspace</string>
+    <string name="reading_nook_status_unread">Unread</string>
+    <string name="reading_nook_status_reading">Reading</string>
+    <string name="reading_nook_status_finished">Finished</string>
+    <string name="reading_nook_tab_overview">Overview</string>
+    <string name="reading_nook_tab_journal">Journal</string>
+    <string name="reading_nook_tab_stamps">Stamps</string>
+    <string name="reading_nook_tab_highlights">Highlights</string>
+    <string name="reading_nook_resume">Resume Reading</string>
+    <string name="reading_nook_progress_label">Progress across all chapters</string>
+    <string name="reading_nook_current_location">Current location: "%1$s"</string>
+    <string name="reading_nook_no_stamps">No reading stamps yet</string>
+    <string name="reading_nook_no_journals">No journal entries yet</string>
+    <string name="reading_nook_no_highlights">No highlights yet</string>
+    <string name="reading_nook_add_journal">Add Journal Entry</string>
+    <string name="reading_nook_journal_title_hint">Entry title</string>
+    <string name="reading_nook_journal_content_hint">Write your reflection…</string>
+    <string name="reading_nook_save_journal">Save Entry</string>
+    <string name="reading_nook_export_journal">Export Journal</string>
+    <string name="settings_tts_section">Read Aloud (TTS Voice)</string>
+    <string name="settings_tts_speed">Reading Speech Speed</string>
+    <string name="settings_tts_pitch">Voice Pitch</string>
     <string name="search_books_hint">Search books…</string>
     <string name="search_in_book_hint">Search this book</string>
 
@@ -293,10 +359,10 @@
     <string name="stats_minutes_value">%1$d min</string>
     <string name="stats_hours_value">%1$dh %2$dm</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_body">The Livre Magicae is designed to work entirely offline.\n\n• No account\n• No tracking\n• No analytics\n• No cloud library\n• No advertising\n• No internet connection required\n\nYour books stay on your device.</string>
+    <string name="about_privacy_body">The Bookworm Bliss is designed to work entirely offline.\n\n• No account\n• No tracking\n• No analytics\n• No cloud library\n• No advertising\n• No internet connection required\n\nYour books stay on your device.</string>
     <string name="about_app_title">About</string>
     <string name="about_app_version">Version 1.36</string>
-    <string name="about_app_description">The Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
+    <string name="about_app_description">The Bookworm Bliss · EPUB Reader\nA calm, offline-first reading companion.</string>
     <string name="about_dictionary_attribution">Offline dictionary bundled with the app.\nEnglish definitions are derived from WordNet 3.1 (wordnet.princeton.edu), used under its permissive license.\nSee assets/dict/WORDNET_LICENSE.txt for details.</string>
 
     <!-- Patch v37: Vocabulary (offline dictionary lookup history) -->

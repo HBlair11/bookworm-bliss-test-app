@@ -30,7 +30,7 @@
             </intent-filter>
 
             <!-- Patch 18 (Addition #3): register the app as a handler for EPUB
-                 files so the system "Open with" sheet offers The Livre Magicae
+                 files so the system "Open with" sheet offers The Bookworm Bliss
                  when a user taps an .epub in a file manager or share sheet.
                  scheme=file catches file:// URIs; scheme=content catches SAF
                  content:// URIs from most file managers. -->
@@ -64,6 +64,12 @@
 
         <activity
             android:name=".BookDetailsActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@style/Theme.EpubReader" />
+
+        <activity
+            android:name=".ReadingNookActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/Theme.EpubReader" />
