@@ -154,7 +154,7 @@ jobs:
         run: |
           set -e
 
-          APK="app/build/outputs/apk/debug/the-livre-magicae.apk"
+          APK="app/build/outputs/apk/debug/bookworm-bliss.apk"
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
 
           if [ -z "$APKSIGNER" ]; then
@@ -176,7 +176,7 @@ jobs:
         run: |
           set -e
 
-          APK="app/build/outputs/apk/debug/the-livre-magicae.apk"
+          APK="app/build/outputs/apk/debug/bookworm-bliss.apk"
 
           if [ ! -f "$APK" ]; then
             echo "::error::APK was not produced."
@@ -216,7 +216,7 @@ jobs:
         run: |
           set -e
 
-          APK="app/build/outputs/apk/debug/the-livre-magicae.apk"
+          APK="app/build/outputs/apk/debug/bookworm-bliss.apk"
 
           AAPT2="$(find "$ANDROID_HOME/build-tools" \
             -type f \
@@ -235,7 +235,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: the-livre-magicae-apk
-          path: app/build/outputs/apk/debug/the-livre-magicae.apk
+          name: bookworm-bliss-apk
+          path: app/build/outputs/apk/debug/bookworm-bliss.apk
           if-no-files-found: error
           retention-days: 10

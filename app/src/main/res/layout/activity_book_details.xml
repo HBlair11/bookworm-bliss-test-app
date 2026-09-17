@@ -115,19 +115,6 @@
                     android:src="@drawable/ic_menu_book"
                     app:tint="?android:textColorPrimary" />
 
-                <!-- Reading Nook -->
-
-                <ImageButton
-                    android:id="@+id/btnReadingNook"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/reading_nook_open"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_compass"
-                    app:tint="?android:textColorPrimary" />
-
                 <!-- Favorite -->
 
                 <ImageButton

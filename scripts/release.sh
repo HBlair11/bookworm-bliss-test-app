@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a release APK for The Livre Magicae.
+# Build a release APK for The Bookworm Bliss.
 # By default this builds the release variant (debug-signed unless a
 # keystore.properties is present — see docs/BUILD_AND_VALIDATION.md).
 # Usage: ./scripts/release.sh
@@ -27,8 +27,8 @@ echo "==> Building release APK…"
 ./gradlew assembleRelease --console=plain --no-daemon --stacktrace
 
 
-APK="app/build/outputs/apk/release/the-livre-magicae.apk"
-OUT="release/the-livre-magicae-release.apk"
+APK="app/build/outputs/apk/release/bookworm-bliss.apk"
+OUT="release/bookworm-bliss-release.apk"
 APKSIGNER="$(find "${ANDROID_HOME}/build-tools" -type f -name apksigner -print 2>/dev/null | sort -V | tail -n 1)"
 if [ -z "$APKSIGNER" ]; then
   echo "ERROR: apksigner was not found in Android SDK Build Tools." >&2
@@ -41,8 +41,8 @@ cp "$APK" "$OUT"
 # Read version from the gradle file for the filename if possible
 VERSION="$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | head -1 | sed 's/versionName = //;s/"//g' || echo unknown)"
 if [ "$VERSION" != "unknown" ]; then
-  cp "$APK" "release/the-livre-magicae-release-${VERSION}.apk"
-  echo "==> Also copied to release/the-livre-magicae-release-${VERSION}.apk"
+  cp "$APK" "release/bookworm-bliss-release-${VERSION}.apk"
+  echo "==> Also copied to release/bookworm-bliss-release-${VERSION}.apk"
 fi
 
 echo "==> Release APK: $OUT ($(du -h "$OUT" | cut -f1))"

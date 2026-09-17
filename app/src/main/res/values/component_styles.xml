@@ -86,8 +86,14 @@
          ============================================================
     -->
 
-    <!-- Base parent style (required for dot-notation children) -->
-    <style name="Widget.Livre.TextView" />
+    <!-- Base TextView style. Sub-styles (Widget.Livre.TextView.*) inherit
+         from this via Android's dot-separated parent convention. Defines
+         shared defaults so every text component starts from the same baseline. -->
+    <style name="Widget.Livre.TextView" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">?attr/livreColorTextPrimary</item>
+    </style>
 
     <!-- Screen title -->
     <style name="Widget.Livre.TextView.ScreenTitle">
@@ -127,8 +133,13 @@
          ============================================================
     -->
 
-    <!-- Base parent style (required for dot-notation children) -->
-    <style name="Widget.Livre.Container" />
+    <!-- Base Container style. Sub-styles (Widget.Livre.Container.*) inherit
+         from this via Android's dot-separated parent convention. Defines
+         shared layout defaults for all container components. -->
+    <style name="Widget.Livre.Container" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 
     <!-- Screen root container with standard padding -->
     <style name="Widget.Livre.Container.Screen">

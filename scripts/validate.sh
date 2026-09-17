@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Full validation pipeline for The Livre Magicae.
+# Full validation pipeline for The Bookworm Bliss.
 # Runs: clean -> Kotlin compile (syntax) -> unit tests -> debug APK -> APK inspection.
 # Exits non-zero if any step fails.
 # Usage: ./scripts/validate.sh
@@ -16,7 +16,7 @@ fi
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/android-sdk}"
 
 AAPT2="${ANDROID_HOME}/build-tools/35.0.0/aapt2"
-APK="app/build/outputs/apk/debug/the-livre-magicae.apk"
+APK="app/build/outputs/apk/debug/bookworm-bliss.apk"
 
 step() { printf "\n\033[1m==> %s\033[0m\n" "$1"; }
 

@@ -1,4 +1,4 @@
-package com.bookwormbliss.app.data
+package com.epubreader.app.data
 
 import android.content.Context
 import androidx.room.Room

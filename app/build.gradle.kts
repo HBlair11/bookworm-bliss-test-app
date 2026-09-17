@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.bookwormbliss.app"
+    namespace = "com.epubreader.app"
     compileSdk = 35
 
     defaultConfig {
@@ -90,7 +90,7 @@ android {
         val variant = this
         variant.outputs.configureEach {
             // output is com.android.build.gradle.internal.api.ApkVariantOutputImpl
-            (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.outputFileName = "the-livre-magicae.apk"
+            (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.outputFileName = "bookworm-bliss.apk"
         }
     }
 }

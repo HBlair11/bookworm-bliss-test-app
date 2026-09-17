@@ -1,4 +1,4 @@
-# The Livre Magicae — Offline EPUB Reader for Android
+# The Bookworm Bliss — Offline EPUB Reader for Android
 
 
 A privacy-first, fully offline EPUB reader with the warmth of a physical bookshelf. 
@@ -183,7 +183,7 @@ debug key by default (see `docs/BUILD_AND_VALIDATION.md` to set up real signing)
 ## Privacy
 
 
-The Livre Magicae requests **no network permissions**. You can verify at any time:
+The Bookworm Bliss requests **no network permissions**. You can verify at any time:
 
 
 ```bash

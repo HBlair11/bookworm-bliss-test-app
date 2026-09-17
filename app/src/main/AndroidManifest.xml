@@ -69,12 +69,6 @@
             android:theme="@style/Theme.EpubReader" />
 
         <activity
-            android:name=".ReadingNookActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader" />
-
-        <activity
             android:name=".MetadataRefreshActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
