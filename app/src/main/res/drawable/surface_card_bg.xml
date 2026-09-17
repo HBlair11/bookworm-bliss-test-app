@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Surface card background drawable. Uses the semantic colorSurface token
+  so every card that references @style/Widget.Livre.Container.Card gets
+  the correct themed background + corner radius automatically.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorSurface" />
+    <corners android:radius="@dimen/card_corner_radius" />
+</shape>

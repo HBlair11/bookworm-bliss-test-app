@@ -1,5 +1,196 @@
-<resources>
-    <style name="Theme.BookwormBliss" parent="android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:fontFamily">sans</item><item name="android:windowLightStatusBar">true</item><item name="android:statusBarColor">@color/app_surface_soft</item><item name="android:navigationBarColor">@color/app_background</item><item name="android:colorAccent">@color/app_primary</item>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      ============================================================
+      THEME HIERARCHY — SEMANTIC DESIGN SYSTEM
+      ============================================================
+      Themes consume the semantic tokens from design_system.xml and
+      expose them as ?attr/ values to layouts.
+
+      Hierarchy:
+        Theme.Livre              (base: colors, text, shapes, dimensions)
+          ├── Theme.Livre.App    (main app / bookshelf / library)
+          ├── Theme.Livre.Reader (reader activity — dark chrome)
+          ├── Theme.Livre.Reader.Settings (full-screen settings)
+          └── Theme.Livre.Reader.Sheet   (bottom sheet overlays)
+
+      All custom attributes use the `livre` prefix to avoid collisions
+      with Material Components / AppCompat attrs.
+
+      To add a new app theme (Pastel, High Contrast, Custom), create
+      a new theme that overrides the color attribute values. Layouts
+      never need to change — they reference ?attr/livre* names.
+    -->
+
+    <!-- ===== BASE THEME — assigns semantic attributes ===== -->
+    <style name="Theme.Livre" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- System bars -->
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="android:fitsSystemWindows">true</item>
+
+        <!-- Material color slots -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorOnSecondary">@color/colorOnSecondary</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+
+        <!-- Semantic text color slots (Material standard) -->
+        <item name="android:textColorPrimary">@color/colorTextPrimary</item>
+        <item name="android:textColorSecondary">@color/colorTextSecondary</item>
+
+        <!-- Custom semantic color attributes (livre prefix avoids Material collisions) -->
+        <item name="livreColorTextPrimary">@color/colorTextPrimary</item>
+        <item name="livreColorTextSecondary">@color/colorTextSecondary</item>
+        <item name="livreColorTextTertiary">@color/colorTextTertiary</item>
+        <item name="livreColorSurfaceVariant">@color/colorSurfaceVariant</item>
+        <item name="livreColorDivider">@color/colorDivider</item>
+        <item name="livreColorAccent">@color/colorAccent</item>
+        <item name="livreColorError">@color/colorError</item>
+        <item name="livreColorSuccess">@color/colorSuccess</item>
+        <item name="livreColorDisabled">@color/colorDisabled</item>
+
+        <!-- Reader content area -->
+        <item name="livreColorReaderBackground">@color/colorReaderBackground</item>
+        <item name="livreColorReaderText">@color/colorReaderText</item>
+        <item name="livreColorReaderLink">@color/colorReaderLink</item>
+        <item name="livreColorReaderSelection">@color/colorReaderSelection</item>
+
+        <!-- Reader chrome -->
+        <item name="livreColorReaderChromeBackground">@color/colorReaderChromeBackground</item>
+        <item name="livreColorReaderChromeSurface">@color/colorReaderChromeSurface</item>
+        <item name="livreColorReaderChromeText">@color/colorReaderChromeText</item>
+        <item name="livreColorReaderChromeTextSecondary">@color/colorReaderChromeTextSecondary</item>
+        <item name="livreColorReaderChromeAccent">@color/colorReaderChromeAccent</item>
+        <item name="livreColorReaderChromeScrim">@color/colorReaderChromeScrim</item>
+
+        <!-- Dimension attributes -->
+        <item name="livreScreenPadding">@dimen/screen_padding_h</item>
+        <item name="livreCardPadding">@dimen/card_padding</item>
+        <item name="livreRowSpacing">@dimen/row_spacing</item>
+        <item name="livreCardSpacing">@dimen/card_spacing</item>
+        <item name="livreSectionSpacing">@dimen/section_spacing</item>
+
+        <!-- Shape attributes -->
+        <item name="livreShapeCard">@style/ShapeAppearance.Livre.Card</item>
+        <item name="livreShapeButton">@style/ShapeAppearance.Livre.Button</item>
+        <item name="livreShapeDialog">@style/ShapeAppearance.Livre.Dialog</item>
+        <item name="livreShapeChip">@style/ShapeAppearance.Livre.Chip</item>
+        <item name="livreShapeThumbnail">@style/ShapeAppearance.Livre.Thumbnail</item>
+
+        <!-- Background -->
+        <item name="android:windowBackground">@color/colorBackground</item>
     </style>
+
+    <!--
+      ============================================================
+      APP THEME — main app / bookshelf / library / details
+      ============================================================
+    -->
+    <style name="Theme.Livre.App" parent="Theme.Livre">
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="android:textColorPrimary">@color/colorTextPrimary</item>
+        <item name="android:textColorSecondary">@color/colorTextSecondary</item>
+    </style>
+
+    <!--
+      ============================================================
+      READER THEME — dark chrome, independent of reading theme
+      The chrome (top/bottom bars, overlays) is STATIC: eggplant
+      background + white text/icons, regardless of the reading
+      theme (light/sepia/dark) and regardless of app day/night.
+      Only the EPUB content area (WebView) changes with reading theme.
+      ============================================================
+    -->
+    <style name="Theme.Livre.Reader" parent="Theme.Livre">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@color/colorReaderChromeBackground</item>
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+
+        <!-- Reader chrome overrides -->
+        <item name="android:colorBackground">@color/colorReaderChromeBackground</item>
+        <item name="colorSurface">@color/colorReaderChromeSurface</item>
+        <item name="colorOnSurface">@color/colorReaderChromeText</item>
+        <item name="android:textColorPrimary">@color/colorReaderChromeText</item>
+        <item name="android:textColorSecondary">@color/colorReaderChromeTextSecondary</item>
+        <item name="colorPrimary">@color/colorReaderChromeAccent</item>
+        <item name="colorOnPrimary">@color/palette_eggplant</item>
+
+        <!-- Settings sheet: static chrome -->
+        <item name="bottomSheetDialogTheme">@style/Theme.Livre.Reader.Sheet</item>
+    </style>
+
+    <!--
+      Bottom sheet overlays on the reader: dark chrome surface,
+      white labels, mint controls. Same always-black system bars.
+    -->
+    <style name="Theme.Livre.Reader.Sheet" parent="Theme.MaterialComponents.DayNight.BottomSheetDialog">
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="colorSurface">@color/colorReaderChromeSurface</item>
+        <item name="colorPrimary">@color/colorReaderChromeAccent</item>
+        <item name="colorOnPrimary">@color/palette_eggplant</item>
+        <item name="android:textColorPrimary">@color/colorReaderChromeText</item>
+        <item name="android:textColorSecondary">@color/colorReaderChromeTextSecondary</item>
+    </style>
+
+    <!--
+      Full-screen reader settings ACTIVITY. Same static dark chrome
+      as the reader so the settings screen is visually continuous.
+    -->
+    <style name="Theme.Livre.Reader.Settings" parent="Theme.Livre.Reader">
+        <item name="android:windowBackground">@color/colorReaderChromeBackground</item>
+        <item name="android:colorBackground">@color/colorReaderChromeBackground</item>
+        <item name="colorSurface">@color/colorReaderChromeSurface</item>
+        <item name="colorOnSurface">@color/colorReaderChromeText</item>
+        <item name="colorPrimary">@color/colorReaderChromeAccent</item>
+        <item name="colorOnPrimary">@color/palette_eggplant</item>
+        <item name="android:textColorPrimary">@color/colorReaderChromeText</item>
+        <item name="android:textColorSecondary">@color/colorReaderChromeTextSecondary</item>
+    </style>
+
+    <!--
+      ============================================================
+      BACKWARD-COMPATIBLE THEME ALIASES
+      ============================================================
+      These preserve the old theme names so existing activities
+      in the AndroidManifest continue to work while we migrate
+      them to the new Theme.Livre.* names.
+    -->
+    <style name="Theme.EpubReader" parent="Theme.Livre.App">
+        <!-- App activities that haven't migrated yet use this. -->
+    </style>
+
+    <style name="Theme.EpubReader.Reader" parent="Theme.Livre.Reader">
+    </style>
+
+    <style name="Theme.EpubReader.Reader.Sheet" parent="Theme.Livre.Reader.Sheet">
+    </style>
+
+    <style name="Theme.EpubReader.Settings" parent="Theme.Livre.Reader.Settings">
+    </style>
+
 </resources>

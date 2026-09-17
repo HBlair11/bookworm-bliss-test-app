@@ -1,37 +1,73 @@
 name: Android Tests
+
 on:
   workflow_dispatch:
     inputs:
       run_instrumentation:
-        description: 'Also run Android instrumentation tests on an emulator'
+        description: "Also run Android instrumentation tests on an emulator"
         required: true
         default: false
         type: boolean
+
 jobs:
   unit-tests:
     name: JVM Unit Tests
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '17' }
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
-      - run: ./gradlew testDebugUnitTest --console=plain --no-daemon --stacktrace
+
+      - name: Run JVM unit tests
+        run: ./gradlew testDebugUnitTest --console=plain --no-daemon --stacktrace
+
+      - name: Upload JVM test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-unit-test-report
+          path: app/build/reports/tests/testDebugUnitTest
+          if-no-files-found: warn
+          retention-days: 10
+
   instrumentation-tests:
     name: Android Instrumentation Tests
     if: ${{ inputs.run_instrumentation }}
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '17' }
-      - uses: android-actions/setup-android@v3
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
-      - uses: reactivecircus/android-emulator-runner@v2
+
+      - name: Run instrumentation tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           target: google_apis
@@ -40,3 +76,14 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           disable-animations: true
           script: ./gradlew connectedDebugAndroidTest --console=plain --no-daemon --stacktrace
+
+      - name: Upload instrumentation test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumentation-test-report
+          path: |
+            app/build/reports/androidTests/connected
+            app/build/outputs/androidTest-results/connected
+          if-no-files-found: warn
+          retention-days: 10

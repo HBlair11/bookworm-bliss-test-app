@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      ============================================================
+      SHAPE APPEARANCES — CORNER RADII
+      ============================================================
+      Material ShapeAppearance styles that give every surface in
+      the app a consistent corner radius. Components reference these
+      via app:shapeAppearance (or android:background via a
+      MaterialShapeDrawable) instead of hardcoding radii.
+
+      To change the app's visual roundness, edit the corner radii
+      in design_system.xml (card_corner_radius, button_corner_radius,
+      dialog_corner_radius) — these styles consume those tokens.
+    -->
+
+    <!-- Cards: book cards, metadata rows, info panels -->
+    <style name="ShapeAppearance.Livre.Card" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/card_corner_radius</item>
+    </style>
+
+    <!-- Medium cards: slightly more rounded for overlays -->
+    <style name="ShapeAppearance.Livre.Card.Medium" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <!-- Large cards: bottom sheets, overlay panels -->
+    <style name="ShapeAppearance.Livre.Card.Large" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/dialog_corner_radius</item>
+    </style>
+
+    <!-- Buttons: all Material buttons -->
+    <style name="ShapeAppearance.Livre.Button" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/button_corner_radius</item>
+    </style>
+
+    <!-- Chips: filter chips, category tags -->
+    <style name="ShapeAppearance.Livre.Chip" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/chip_corner_radius</item>
+    </style>
+
+    <!-- Dialogs: alert dialogs, bottom sheets -->
+    <style name="ShapeAppearance.Livre.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/dialog_corner_radius</item>
+    </style>
+
+    <!-- Thumbnails: book covers, small images -->
+    <style name="ShapeAppearance.Livre.Thumbnail" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/thumbnail_corner_radius</item>
+    </style>
+
+    <!-- Full circle (FAB, avatars) -->
+    <style name="ShapeAppearance.Livre.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+</resources>

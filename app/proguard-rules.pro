@@ -1,1 +1,3 @@
-# The Bookworm Bliss keeps release shrinking conservative until feature modules stabilize.
+# Keep default ProGuard rules.
+-keep class com.epubreader.app.data.** { *; }
+-keepattributes *Annotation*
