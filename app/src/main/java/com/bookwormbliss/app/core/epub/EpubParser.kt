@@ -5,6 +5,7 @@ import android.net.Uri
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.security.MessageDigest
 import java.util.zip.ZipFile
 import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Element
@@ -14,7 +15,9 @@ class EpubParser(private val context: Context) {
         val diagnostics = mutableListOf<EpubDiagnostic>()
         val source = File(context.filesDir, "imports/${System.currentTimeMillis()}_${safeName(uri.lastPathSegment ?: "book.epub")}")
         source.parentFile?.mkdirs()
-        try { context.contentResolver.openInputStream(uri)?.use { input -> FileOutputStream(source).use { input.copyTo(it) } } ?: return EpubResult(EpubParseStatus.INVALID, listOf(EpubDiagnostic("Unable to read the selected EPUB.", true)), null)
+        try { context.contentResolver.openInputStream(uri)?.use { input ->
+                FileOutputStream(source).use { output -> input.copyTo(output) }
+            } ?: return EpubResult(EpubParseStatus.INVALID, listOf(EpubDiagnostic("Unable to read the selected EPUB.", true)), null)
         } catch (e: Exception) { return EpubResult(EpubParseStatus.INVALID, listOf(EpubDiagnostic("Unable to copy EPUB: ${e.message}", true)), null) }
         return parseFile(source)
     }
@@ -67,9 +70,49 @@ class EpubParser(private val context: Context) {
 
     private fun buildToc(opf: org.w3c.dom.Document, manifest: Map<String,Pair<String,String>>, base: File, root: File, chapters: List<EpubChapter>, d: MutableList<EpubDiagnostic>): List<EpubTocEntry> {
         val navId = manifest.entries.firstOrNull { it.value.second.contains("nav") }?.key
-        val navHref = navId?.let { manifest[it]?.first } ?: return chapters.map { EpubTocEntry(it.title,it.href,it.spineIndex,0) }
-        val navFile=resolve(base,navHref); if(!navFile.exists()) return chapters.map { EpubTocEntry(it.title,it.href,it.spineIndex,0) }
-        return try { val x=db(navFile); val links=x.getElementsByTagNameNS("*","a"); (0 until links.length).mapNotNull { i -> val a=links.item(i) as Element; val href=a.getAttribute("href"); val target=href.substringBefore('#'); val idx=chapters.indexOfFirst { it.href.substringBefore('#').endsWith(target.substringAfterLast('/')) }; if(idx>=0) EpubTocEntry(a.textContent.trim(),chapters[idx].href,idx,0) else null } } catch (_:Exception) { d+=EpubDiagnostic("Navigation document could not be fully parsed."); chapters.map { EpubTocEntry(it.title,it.href,it.spineIndex,0) } }
+        val navHref = navId?.let { manifest[it]?.first }
+        if (navHref != null) {
+            val navFile = resolve(base, navHref)
+            if (navFile.exists()) {
+                try {
+                    val x = db(navFile)
+                    val links = x.getElementsByTagNameNS("*", "a")
+                    val entries = (0 until links.length).mapNotNull { i ->
+                        val a = links.item(i) as Element
+                        val href = a.getAttribute("href")
+                        val target = href.substringBefore('#')
+                        val idx = chapters.indexOfFirst { it.href.substringBefore('#').endsWith(target.substringAfterLast('/')) }
+                        if (idx >= 0) EpubTocEntry(a.textContent.trim(), chapters[idx].href, idx, 0) else null
+                    }
+                    if (entries.isNotEmpty()) return entries
+                } catch (_: Exception) { d += EpubDiagnostic("Navigation document could not be fully parsed.") }
+            }
+        }
+
+        // EPUB 2 fallback: locate the NCX referenced by spine toc="...".
+        val spineNodes = opf.getElementsByTagNameNS("*", "spine")
+        val tocId = if (spineNodes.length > 0) (spineNodes.item(0) as Element).getAttribute("toc").takeIf { it.isNotBlank() } else null
+        val ncxHref = tocId?.let { manifest[it]?.first }
+        if (ncxHref != null) {
+            val ncxFile = resolve(base, ncxHref)
+            if (ncxFile.exists()) {
+                try {
+                    val x = db(ncxFile)
+                    val navPoints = x.getElementsByTagNameNS("*", "navPoint")
+                    val entries = (0 until navPoints.length).mapNotNull { i ->
+                        val point = navPoints.item(i) as Element
+                        val label = point.getElementsByTagNameNS("*", "text").item(0)?.textContent?.trim().orEmpty()
+                        val content = point.getElementsByTagNameNS("*", "content").item(0) as? Element
+                        val href = content?.getAttribute("src").orEmpty()
+                        val target = href.substringBefore('#')
+                        val idx = chapters.indexOfFirst { it.href.substringBefore('#').endsWith(target.substringAfterLast('/')) }
+                        if (idx >= 0 && label.isNotBlank()) EpubTocEntry(label, chapters[idx].href, idx, 0) else null
+                    }
+                    if (entries.isNotEmpty()) return entries
+                } catch (_: Exception) { d += EpubDiagnostic("EPUB 2 NCX navigation could not be fully parsed.") }
+            }
+        }
+        return chapters.map { EpubTocEntry(it.title, it.href, it.spineIndex, 0) }
     }
     private fun findCover(doc: org.w3c.dom.Document, manifest: Map<String,Pair<String,String>>, base: File, root: File): File? {
         val meta=doc.getElementsByTagNameNS("*","meta"); var coverId:String?=null

@@ -46,10 +46,12 @@ jobs:
           "$APKSIGNER" verify --print-certs "$APK"
           AAPT2=$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -n 1)
           ! "$AAPT2" dump permissions "$APK" | grep -qi 'android.permission.INTERNET'
+      - name: Name debug APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/the-bookworm-bliss.apk
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: the-bookworm-bliss-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/the-bookworm-bliss.apk
           if-no-files-found: error
           retention-days: 10
