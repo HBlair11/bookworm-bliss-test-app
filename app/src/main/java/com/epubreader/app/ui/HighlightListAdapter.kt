@@ -51,9 +51,7 @@ class HighlightListAdapter(
             val g = android.graphics.Color.green(item.color)
             val b = android.graphics.Color.blue(item.color)
             colorDot.setBackgroundColor(android.graphics.Color.rgb(r, g, b))
-            // Presentation may normalize whitespace; the persisted highlight
-            // text itself remains raw so it stays aligned with its DOM anchor.
-            text.text = item.text.replace(Regex("\\s+"), " ").trim()
+            text.text = item.text.trim()
             if (!item.note.isNullOrBlank()) {
                 note.visibility = View.VISIBLE
                 note.text = item.note

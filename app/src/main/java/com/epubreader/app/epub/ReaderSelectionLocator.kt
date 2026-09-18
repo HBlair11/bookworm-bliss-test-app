@@ -19,4 +19,10 @@ data class ReaderSelectionLocator(
     val rectBottom: Int = 0,
 ) {
     val hasRect: Boolean get() = rectRight > rectLeft && rectBottom > rectTop
+
+    /** Trimmed text for display purposes. The raw [text] is stored untrimmed
+     *  so offsets remain consistent with the original DOM range; display
+     *  surfaces (copy, share, define, highlight list) should use this instead
+     *  of trimming [text] ad hoc. */
+    val displayText: String get() = text.trim()
 }

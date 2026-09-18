@@ -483,10 +483,7 @@ class ReaderOverlayController(
     }
 
     fun addBookmarkFromSelection(selection: ReaderSelectionLocator) {
-        // Preserve raw selection text for the persisted DOM anchor. Presentation
-        // code may normalize it separately, but the stored text must remain
-        // consistent with the captured offsets.
-        val text = selection.text
+        val text = selection.displayText
         if (text.isBlank()) return
         val href = selection.spineHref
         val selectionAnchor = "__LIVRE_SELECTED_V1__" + org.json.JSONObject().apply {
@@ -1093,7 +1090,7 @@ class ReaderOverlayController(
                 }
                 // Highlighted text
                 root.addView(TextView(config.activity).apply {
-                    text = highlight.text
+                    text = highlight.text.trim()
                     textSize = 15f
                     setTextColor(callbacks.themeColor(android.R.attr.textColorPrimary))
                     setPadding(0, 0, 0, (12 * config.activity.resources.displayMetrics.density).roundToInt())

@@ -53,11 +53,7 @@ class BookmarkAdapter(
         val marker = "__LIVRE_SELECTED_V1__"
         if (!snippet.startsWith(marker)) return snippet
         return runCatching {
-            org.json.JSONObject(snippet.removePrefix(marker))
-                .optString("text")
-                .replace(Regex("\\s+"), " ")
-                .trim()
-                .ifBlank { snippet }
+            org.json.JSONObject(snippet.removePrefix(marker)).optString("text").ifBlank { snippet }
         }.getOrDefault(snippet)
     }
 

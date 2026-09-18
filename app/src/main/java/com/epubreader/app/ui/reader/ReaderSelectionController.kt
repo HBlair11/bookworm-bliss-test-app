@@ -342,7 +342,7 @@ class ReaderSelectionController(
     // ---- Selection actions ----
 
     fun copySelectedText() {
-        val text = state.currentReaderSelection?.text?.trim().orEmpty()
+        val text = state.currentReaderSelection?.displayText.orEmpty()
         if (text.isBlank()) return
         val clipboard = config.applicationContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText(callbacks.getString(R.string.selection_copy), text))
@@ -350,7 +350,7 @@ class ReaderSelectionController(
     }
 
     fun processSelectedText(action: String) {
-        val text = state.currentReaderSelection?.text?.trim().orEmpty()
+        val text = state.currentReaderSelection?.displayText.orEmpty()
         if (text.isBlank()) return
         val intent = Intent(action).apply {
             type = "text/plain"
@@ -361,7 +361,7 @@ class ReaderSelectionController(
     }
 
     fun webSearchSelectedText() {
-        val text = state.currentReaderSelection?.text?.trim().orEmpty()
+        val text = state.currentReaderSelection?.displayText.orEmpty()
         if (text.isBlank()) return
         val intent = Intent(Intent.ACTION_WEB_SEARCH).apply { putExtra("query", text) }
         if (callbacks.resolveActivity(intent)) callbacks.startActivity(intent)
@@ -379,7 +379,7 @@ class ReaderSelectionController(
             true
         }
         popup.menu.add(callbacks.getString(R.string.selection_share)).setOnMenuItemClickListener {
-            val text = selection?.text?.trim().orEmpty()
+            val text = selection?.displayText.orEmpty()
             if (text.isNotBlank()) {
                 callbacks.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, text) }, callbacks.getString(R.string.selection_share)))
             }
@@ -436,7 +436,7 @@ class ReaderSelectionController(
     // ---- Definition card ----
 
     fun showDefinition(selection: ReaderSelectionLocator?) {
-        val raw = selection?.text?.trim().orEmpty()
+        val raw = selection?.displayText.orEmpty()
         if (raw.isBlank()) {
             Snackbar.make(config.rootView, R.string.selection_none, Snackbar.LENGTH_SHORT).show()
             return

@@ -116,10 +116,15 @@ class BookDetailsActivity : AppCompatActivity() {
         // BOOK
         // =========================
 
-        // Phase 10: author is shown both in the hero and in the metadata block.
-        val author = book.author.ifBlank { getString(R.string.unknown_author) }
-        binding.authorValue.text = author
-        binding.bookValue.text = author
+        // Phase 10: metadata author value (hero shows author in accent color)
+        binding.bookValue.text =
+            book.author.ifBlank {
+                getString(R.string.unknown_author)
+            }
+        binding.authorValue.text =
+            book.author.ifBlank {
+                getString(R.string.unknown_author)
+            }
 
         // =========================
         // SERIES
@@ -129,7 +134,7 @@ class BookDetailsActivity : AppCompatActivity() {
 
             binding.seriesContainer.visibility = View.VISIBLE
 
-            binding.seriesValue.text =
+            val seriesText =
                 book.seriesIndex?.let { index ->
                     // Check if the float ends in .0
                     val formattedIndex = if (index % 1.0 == 0.0) {
@@ -141,18 +146,15 @@ class BookDetailsActivity : AppCompatActivity() {
                     "${book.series} #$formattedIndex"
                 } ?: book.series
 
+            binding.seriesValue.text = seriesText
+            binding.seriesValue.visibility = View.VISIBLE
+            binding.seriesMetadataValue.text = seriesText
+
         } else {
 
             binding.seriesContainer.visibility = View.GONE
+            binding.seriesValue.visibility = View.GONE
         }
-
-        // =========================
-        // PUBLISHER
-        // =========================
-
-        val publisher = book.publisher?.trim().orEmpty()
-        binding.publisherContainer.visibility = if (publisher.isBlank()) View.GONE else View.VISIBLE
-        binding.publisherValue.text = publisher
 
         // =========================
         // FILENAME
@@ -178,6 +180,15 @@ class BookDetailsActivity : AppCompatActivity() {
 
         binding.languageValue.text =
             book.language?.takeIf { it.isNotBlank() } ?: ""
+        val publisher = book.publisher?.takeIf { it.isNotBlank() }
+        binding.publisherValue.text = publisher ?: ""
+        if (publisher.isNullOrBlank()) {
+            binding.publisherLabel.visibility = View.GONE
+            binding.publisherValue.visibility = View.GONE
+        } else {
+            binding.publisherLabel.visibility = View.VISIBLE
+            binding.publisherValue.visibility = View.VISIBLE
+        }
         binding.publishYearValue.text = book.publishYear?.toString().orEmpty()
         binding.subjectsValue.text = book.subjectTags.orEmpty()
 

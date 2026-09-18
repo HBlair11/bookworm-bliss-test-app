@@ -16,7 +16,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import com.epubreader.app.data.BookEntity
@@ -235,30 +234,26 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
+        // Create the drawer toggle BEFORE setupObservers() so that when the
+        // viewModel.view observer fires (which calls applyView → accesses
+        // drawerToggle), the toggle is already initialized. Previously the
+        // toggle was created after setupObservers(), causing a crash when the
+        // observer delivered a restored view.
+        drawerToggle =
+            ActionBarDrawerToggle(
+                this,
+                binding.drawerRoot,
+                binding.toolbar,
+                R.string.nav_open,
+                R.string.nav_close,
+            ).also { toggle ->
+                binding.drawerRoot.addDrawerListener(toggle)
+                toggle.syncState()
+            }
+        navigationController.drawerToggle = drawerToggle
+
         restoreViewFromSavedState(savedInstanceState)
         navigationController.setupDrawer()
-
-        // Build the drawer toggle before any observer can call applyView().
-        // AppNavigationController needs a live toggle to establish the correct
-        // hamburger/back affordance for the current ShelfView. Creating it after
-        // setupObservers() left the first applyView() without a usable shell.
-        drawerToggle = ActionBarDrawerToggle(
-            this,
-            binding.drawerRoot,
-            binding.toolbar,
-            R.string.nav_open,
-            R.string.nav_close,
-        )
-        binding.drawerRoot.addDrawerListener(drawerToggle)
-        navigationController.drawerToggle = drawerToggle
-        drawerToggle.syncState()
-        applyToolbarNavigationVisibilitySafeguard()
-
-        // Set up Home before observers are registered. The view observer below
-        // performs the first full applyView() once the Activity reaches STARTED;
-        // do not call applyView() synchronously from onCreate because several
-        // shelf controllers are lifecycle-driven and their adapters/content are
-        // not yet attached at this point.
         homeController.setup()
         binding.refresh.setOnRefreshListener { folderController.rescanSelectedFolder() }
         setupObservers()
@@ -271,6 +266,11 @@ class MainActivity : AppCompatActivity() {
         // Patch 18 (Addition #3): if launched by the system "Open with" for an
         // .epub, import it and jump straight into the reader.
         handleViewIntent(intent)
+
+        // Explicitly apply the current view once now that the toggle is ready
+        // and observers are registered, so the drawer indicator, title, and
+        // up-affordance are all correct on launch.
+        navigationController.applyView(viewModel.view.value ?: ShelfView.Home)
 
         onBackPressedDispatcher.addCallback(
             this,
@@ -446,35 +446,8 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    private fun applyToolbarNavigationVisibilitySafeguard() {
-        // The toggle remains the source of truth for the drawer/back affordance.
-        // These are only explicit toolbar visibility safeguards for themes/devices
-        // that otherwise render the navigation icon too faintly.
-        binding.toolbar.setBackgroundColor(
-            com.google.android.material.color.MaterialColors.getColor(
-                binding.toolbar,
-                com.google.android.material.R.attr.colorSurface,
-            ),
-        )
-        binding.toolbar.setNavigationIconTint(
-            com.google.android.material.color.MaterialColors.getColor(
-                binding.toolbar,
-                com.google.android.material.R.attr.colorOnSurface,
-            ),
-        )
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Give ActionBarDrawerToggle first chance at android.R.id.home while the
-        // drawer indicator is enabled. Detail/Recently Added views disable the
-        // indicator, so their home item falls through to the existing back logic.
-        if (item.itemId == android.R.id.home && drawerToggle.isDrawerIndicatorEnabled) {
-            if (drawerToggle.onOptionsItemSelected(item)) return true
-            binding.drawerRoot.openDrawer(GravityCompat.START)
-            return true
-        }
-
-        return when (item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
             R.id.action_search -> {
                 launchSearch()
                 true
@@ -496,13 +469,25 @@ class MainActivity : AppCompatActivity() {
             }
 
             android.R.id.home -> {
-                navigationController.returnToParentList()
+                val view = viewModel.view.value ?: ShelfView.Home
+                when {
+                    ShelfStateStore.isRecentlyAdded(view) -> {
+                        navigationController.exitRecentlyAdded()
+                    }
+                    ShelfStateStore.isDetail(view) -> {
+                        navigationController.returnToParentList()
+                    }
+                    else -> {
+                        binding.drawerRoot.openDrawer(androidx.core.view.GravityCompat.START)
+                    }
+                }
                 true
             }
 
-            else -> super.onOptionsItemSelected(item)
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
         }
-    }
 
     // ---------------------------------------------------------------- search (separate screen)
     private fun launchSearch() {

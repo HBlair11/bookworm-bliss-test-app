@@ -4,7 +4,6 @@ import android.content.Intent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -208,9 +207,7 @@ class AppNavigationController(
             // up-indicator so the toggle's own drawer indicator takes over
             // again.
             drawerToggle.setHomeAsUpIndicator(0)
-            drawerToggle.setToolbarNavigationClickListener {
-                binding.drawerRoot.openDrawer(GravityCompat.START)
-            }
+            drawerToggle.setToolbarNavigationClickListener { binding.drawerRoot.open() }
         }
         drawerToggle.syncState()
         binding.toolbar.title = titleFor(view)
