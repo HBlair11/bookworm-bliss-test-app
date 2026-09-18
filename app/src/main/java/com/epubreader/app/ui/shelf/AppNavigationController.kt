@@ -206,12 +206,31 @@ class AppNavigationController(
             drawerToggle.setToolbarNavigationClickListener {
                 if (isRecentlyAdded) exitRecentlyAdded() else returnToParentList()
             }
+            // Visibility safeguard: explicitly set the navigation icon and tint
+            // on the MaterialToolbar, since ActionBarDrawerToggle's delegate
+            // doesn't always render on MaterialToolbar.
+            binding.toolbar.navigationIcon =
+                androidx.core.content.ContextCompat.getDrawable(config.activity, R.drawable.ic_arrow_back)
+            binding.toolbar.setNavigationIconTint(
+                androidx.core.content.ContextCompat.getColor(config.activity, R.color.colorTextPrimary)
+            )
+            binding.toolbar.setNavigationOnClickListener {
+                if (isRecentlyAdded) exitRecentlyAdded() else returnToParentList()
+            }
         } else {
             // Re-enable the hamburger. Passing 0 clears any previously-set
             // up-indicator so the toggle's own drawer indicator takes over
             // again.
             drawerToggle.setHomeAsUpIndicator(0)
             drawerToggle.setToolbarNavigationClickListener { binding.drawerRoot.open() }
+            // Visibility safeguard: explicitly set the hamburger icon and tint
+            // on the MaterialToolbar.
+            binding.toolbar.navigationIcon =
+                androidx.core.content.ContextCompat.getDrawable(config.activity, R.drawable.ic_menu)
+            binding.toolbar.setNavigationIconTint(
+                androidx.core.content.ContextCompat.getColor(config.activity, R.color.colorTextPrimary)
+            )
+            binding.toolbar.setNavigationOnClickListener { binding.drawerRoot.open() }
         }
         drawerToggle.syncState()
         binding.toolbar.title = titleFor(view)
