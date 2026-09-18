@@ -12,15 +12,15 @@ import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.epubreader.app.R
-import com.epubreader.app.data.AppDatabase
 import com.epubreader.app.data.BookEntity
-import com.epubreader.app.data.BookRepository
 import com.epubreader.app.data.BookmarkEntity
 import com.epubreader.app.data.HighlightEntity
 import com.epubreader.app.epub.EpubBook
 import com.epubreader.app.epub.EpubResourceResolver
-import com.epubreader.app.epub.EpubSearchEngine
 import com.epubreader.app.epub.ReaderSelectionLocator
+import com.epubreader.app.features.annotation.BookmarkService
+import com.epubreader.app.features.annotation.HighlightService
+import com.epubreader.app.features.search.ReaderSearchService
 import com.epubreader.app.ui.BookmarkAdapter
 import com.epubreader.app.ui.HighlightListAdapter
 import com.epubreader.app.ui.SearchResultAdapter
@@ -69,6 +69,10 @@ class ReaderOverlayController(
         val root: View,
         val handler: android.os.Handler,
         val readerHistory: View,
+        // Phase 7 feature services — the controller renders, services own logic.
+        val bookmarkService: BookmarkService,
+        val highlightService: HighlightService,
+        val searchService: ReaderSearchService,
     )
 
     interface State {
@@ -132,25 +136,14 @@ class ReaderOverlayController(
         fun sectionLabel(): String
         fun themeColor(attr: Int): Int
         fun getString(resId: Int, vararg args: Any): String
-        val db: AppDatabase
-        val applicationContext: android.content.Context
         val lifecycleScope: androidx.lifecycle.LifecycleCoroutineScope
     }
 
     // ---- Highlight color constants ----
 
     companion object {
-        const val HIGHLIGHT_YELLOW = 0xFFFFEB3B.toInt()
-        const val HIGHLIGHT_GREEN = 0xFF66BB6A.toInt()
-        const val HIGHLIGHT_BLUE = 0xFF42A5F5.toInt()
-        const val HIGHLIGHT_PURPLE = 0xFFAB47BC.toInt()
-
-        fun highlightCssColor(color: Int): String {
-            val r = android.graphics.Color.red(color)
-            val g = android.graphics.Color.green(color)
-            val b = android.graphics.Color.blue(color)
-            return "rgba($r,$g,$b,0.4)"
-        }
+        // Highlight colors and their CSS form live in HighlightService
+        // (single source of truth since Phase 7).
     }
 
     // ---- TOC / Bookmarks / Highlights overlay ----
@@ -177,13 +170,13 @@ class ReaderOverlayController(
             state.bookmarkAdapter = BookmarkAdapter(
                 onDelete = { bookmark ->
                     callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                        callbacks.db.bookmarkDao().delete(bookmark)
+                        config.bookmarkService.delete(bookmark)
                         withContext(Dispatchers.Main) {
                             Snackbar
                                 .make(config.root, R.string.bookmark_deleted, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo) {
                                     callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                                        callbacks.db.bookmarkDao().insert(bookmark)
+                                        config.bookmarkService.restore(bookmark)
                                     }
                                 }
                                 .show()
@@ -206,14 +199,14 @@ class ReaderOverlayController(
                 },
                 onDelete = { h ->
                     callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                        callbacks.db.highlightDao().delete(h)
+                        config.highlightService.delete(h)
                         withContext(Dispatchers.Main) {
                             removeHighlightDecorationsFromWebView(h.id)
                             Snackbar
                                 .make(config.root, R.string.highlight_deleted, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo) {
                                     callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                                        callbacks.db.highlightDao().insert(h)
+                                        config.highlightService.restore(h)
                                         withContext(Dispatchers.Main) {
                                             val currentHref = state.epub?.spine?.getOrNull(state.spineIndex)?.href
                                             if (currentHref == h.spineHref) {
@@ -247,14 +240,14 @@ class ReaderOverlayController(
 
         if (!state.bookmarkObserverStarted) {
             state.bookmarkObserverStarted = true
-            callbacks.db.bookmarkDao().observeForBook(state.bookId).asLiveData().observe(config.activity as androidx.lifecycle.LifecycleOwner) { list ->
+            config.bookmarkService.observeForBook(state.bookId).asLiveData().observe(config.activity as androidx.lifecycle.LifecycleOwner) { list ->
                 (state.bookmarkRv?.adapter as? BookmarkAdapter)?.submitList(list)
                 refreshBookmarkList()
             }
         }
         if (!state.highlightObserverStarted) {
             state.highlightObserverStarted = true
-            callbacks.db.highlightDao().observeForBook(state.bookId).asLiveData().observe(config.activity as androidx.lifecycle.LifecycleOwner) { list ->
+            config.highlightService.observeForBook(state.bookId).asLiveData().observe(config.activity as androidx.lifecycle.LifecycleOwner) { list ->
                 (state.highlightRv?.adapter as? HighlightListAdapter)?.submitList(list)
                 if (state.activeOverlayTab == R.id.btnTabHighlights) {
                     state.highlightEmpty?.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
@@ -373,13 +366,15 @@ class ReaderOverlayController(
         val book = state.epub ?: return
         val file = state.bookEntity?.path?.let { java.io.File(it) } ?: return
         state.searchEmpty?.visibility = View.GONE
-        callbacks.lifecycleScope.launch(Dispatchers.IO) {
-            val engine = EpubSearchEngine(file)
-            val results = engine.search(book.spine, tocMap(), query)
-            withContext(Dispatchers.Main) {
-                (state.searchRv?.adapter as? SearchResultAdapter)?.submitList(results)
-                state.searchEmpty?.visibility = if (results.isEmpty()) View.VISIBLE else View.GONE
-            }
+        config.searchService.search(
+            scope = callbacks.lifecycleScope,
+            file = file,
+            spine = book.spine,
+            tocTitles = tocMap(),
+            query = query,
+        ) { results ->
+            (state.searchRv?.adapter as? SearchResultAdapter)?.submitList(results)
+            state.searchEmpty?.visibility = if (results.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 
@@ -467,45 +462,21 @@ class ReaderOverlayController(
             val ratio = json?.optDouble("ratio", state.currentScrollRatio.toDouble())?.toFloat()?.coerceIn(0f, 1f) ?: state.currentScrollRatio
             val snippet = json?.optString("snippet").orEmpty().trim()
             callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                val existing = callbacks.db.bookmarkDao().findWholePageBySnippet(state.bookId, idx, snippet).let { semantic ->
-                    semantic ?: callbacks.db.bookmarkDao().findWholePage(state.bookId, idx, page, ratio)
-                }
-                if (existing != null) {
-                    withContext(Dispatchers.Main) {
-                        Snackbar
-                            .make(config.root, R.string.bookmark_exists, Snackbar.LENGTH_LONG)
-                            .setAction(R.string.delete) {
-                                callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                                    callbacks.db.bookmarkDao().delete(existing)
-                                    withContext(Dispatchers.Main) {
-                                        Snackbar
-                                            .make(config.root, R.string.bookmark_deleted, Snackbar.LENGTH_LONG)
-                                            .setAction(R.string.undo) {
-                                                callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                                                    callbacks.db.bookmarkDao().insert(existing)
-                                                }
-                                            }
-                                            .show()
-                                    }
-                                }
-                            }
-                            .show()
-                    }
-                    return@launch
-                }
-                callbacks.db.bookmarkDao().insert(
-                    BookmarkEntity(
-                        bookId = state.bookId,
-                        spineIndex = idx,
-                        scrollRatio = ratio,
-                        pageInChapter = page,
-                        chapterTitle = title,
-                        snippet = snippet.ifBlank { title },
-                        bookmarkType = BookmarkEntity.TYPE_WHOLE_PAGE,
-                    )
+                val result = config.bookmarkService.addWholePageBookmark(
+                    bookId = state.bookId,
+                    spineIndex = idx,
+                    pageInChapter = page,
+                    scrollRatio = ratio,
+                    chapterTitle = title,
+                    snippet = snippet,
                 )
                 withContext(Dispatchers.Main) {
-                    Snackbar.make(config.root, R.string.bookmark_added, Snackbar.LENGTH_SHORT).show()
+                    when (result) {
+                        is BookmarkService.AddResult.Duplicate ->
+                            showBookmarkExistsSnackbar(result.existing)
+                        is BookmarkService.AddResult.Created ->
+                            Snackbar.make(config.root, R.string.bookmark_added, Snackbar.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -533,48 +504,47 @@ class ReaderOverlayController(
             val page = values?.getOrNull(0)?.toIntOrNull()?.coerceAtLeast(0) ?: state.currentPageInChapter
             val ratio = values?.getOrNull(1)?.toFloatOrNull()?.coerceIn(0f, 1f) ?: state.currentScrollRatio
             callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                val existing = callbacks.db.bookmarkDao().findTextBySnippet(state.bookId, idx, selectionAnchor).let { semantic ->
-                    semantic ?: callbacks.db.bookmarkDao().findText(state.bookId, idx, page, selectionAnchor)
+                val result = config.bookmarkService.addTextBookmark(
+                    bookId = state.bookId,
+                    spineIndex = idx,
+                    pageInChapter = page,
+                    scrollRatio = ratio,
+                    chapterTitle = title,
+                    selectionAnchor = selectionAnchor,
+                )
+                withContext(Dispatchers.Main) {
+                    when (result) {
+                        is BookmarkService.AddResult.Duplicate ->
+                            showBookmarkExistsSnackbar(result.existing)
+                        is BookmarkService.AddResult.Created ->
+                            Snackbar.make(config.root, R.string.bookmark_added, Snackbar.LENGTH_SHORT).show()
+                    }
                 }
-                if (existing != null) {
+            }
+        }
+    }
+
+    /** "Bookmark already exists" prompt with a delete-and-undo path.
+     *  Shared by the whole-page and selection bookmark flows. */
+    private fun showBookmarkExistsSnackbar(existing: BookmarkEntity) {
+        Snackbar
+            .make(config.root, R.string.bookmark_exists, Snackbar.LENGTH_LONG)
+            .setAction(R.string.delete) {
+                callbacks.lifecycleScope.launch(Dispatchers.IO) {
+                    config.bookmarkService.delete(existing)
                     withContext(Dispatchers.Main) {
                         Snackbar
-                            .make(config.root, R.string.bookmark_exists, Snackbar.LENGTH_LONG)
-                            .setAction(R.string.delete) {
+                            .make(config.root, R.string.bookmark_deleted, Snackbar.LENGTH_LONG)
+                            .setAction(R.string.undo) {
                                 callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                                    callbacks.db.bookmarkDao().delete(existing)
-                                    withContext(Dispatchers.Main) {
-                                        Snackbar
-                                            .make(config.root, R.string.bookmark_deleted, Snackbar.LENGTH_LONG)
-                                            .setAction(R.string.undo) {
-                                                callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                                                    callbacks.db.bookmarkDao().insert(existing)
-                                                }
-                                            }
-                                            .show()
-                                    }
+                                    config.bookmarkService.restore(existing)
                                 }
                             }
                             .show()
                     }
-                    return@launch
-                }
-                callbacks.db.bookmarkDao().insert(
-                    BookmarkEntity(
-                        bookId = state.bookId,
-                        spineIndex = idx,
-                        scrollRatio = ratio,
-                        pageInChapter = page,
-                        chapterTitle = title,
-                        snippet = selectionAnchor,
-                        bookmarkType = BookmarkEntity.TYPE_TEXT,
-                    )
-                )
-                withContext(Dispatchers.Main) {
-                    Snackbar.make(config.root, R.string.bookmark_added, Snackbar.LENGTH_SHORT).show()
                 }
             }
-        }
+            .show()
     }
 
     // ---- Overlay helpers / back ----
@@ -583,6 +553,8 @@ class ReaderOverlayController(
         config.tocBookmarkOverlay.visibility == View.VISIBLE || config.searchOverlay.visibility == View.VISIBLE
 
     fun hideOverlays() {
+        // A dismissed search must never deliver stale results afterwards.
+        config.searchService.cancel()
         config.tocBookmarkOverlay.visibility = View.GONE
         config.searchOverlay.visibility = View.GONE
         state.bookmarksTabActive = false
@@ -639,10 +611,10 @@ class ReaderOverlayController(
             return
         }
         val colors = listOf(
-            HIGHLIGHT_YELLOW to R.string.highlight_color_yellow to R.drawable.highlight_color_yellow,
-            HIGHLIGHT_GREEN to R.string.highlight_color_green to R.drawable.highlight_color_green,
-            HIGHLIGHT_BLUE to R.string.highlight_color_blue to R.drawable.highlight_color_blue,
-            HIGHLIGHT_PURPLE to R.string.highlight_color_purple to R.drawable.highlight_color_purple,
+            HighlightService.HIGHLIGHT_YELLOW to R.string.highlight_color_yellow to R.drawable.highlight_color_yellow,
+            HighlightService.HIGHLIGHT_GREEN to R.string.highlight_color_green to R.drawable.highlight_color_green,
+            HighlightService.HIGHLIGHT_BLUE to R.string.highlight_color_blue to R.drawable.highlight_color_blue,
+            HighlightService.HIGHLIGHT_PURPLE to R.string.highlight_color_purple to R.drawable.highlight_color_purple,
         )
         val dialog = BottomSheetDialog(config.activity)
         val root = LinearLayout(config.activity).apply {
@@ -698,7 +670,7 @@ class ReaderOverlayController(
             endOffset = selection.endOffset,
         )
         callbacks.lifecycleScope.launch(Dispatchers.IO) {
-            val id = BookRepository(callbacks.applicationContext).addHighlight(highlight)
+            val id = config.highlightService.save(highlight)
             withContext(Dispatchers.Main) {
                 injectHighlightIntoWebView(id, selection.text, selection.prefix, selection.suffix, color, selection.startPath, selection.endPath, selection.startOffset, selection.endOffset)
                 Snackbar.make(config.root, R.string.highlight_added, Snackbar.LENGTH_SHORT).show()
@@ -726,7 +698,7 @@ class ReaderOverlayController(
         startOffset: Int = 0,
         endOffset: Int = 0,
     ) {
-        val cssColor = highlightCssColor(color)
+        val cssColor = HighlightService.highlightCssColor(color)
         val safeText = org.json.JSONObject.quote(text)
         val safePrefix = org.json.JSONObject.quote(prefix)
         val safeSuffix = org.json.JSONObject.quote(suffix)
@@ -1045,8 +1017,7 @@ class ReaderOverlayController(
         val book = state.epub ?: return
         val href = book.spine.getOrNull(state.spineIndex)?.href ?: return
         callbacks.lifecycleScope.launch(Dispatchers.IO) {
-            val highlights = BookRepository(callbacks.applicationContext)
-                .getHighlightsForChapter(state.bookId, href)
+            val highlights = config.highlightService.getForChapter(state.bookId, href)
             if (highlights.isEmpty()) return@launch
             withContext(Dispatchers.Main) {
                 highlights.forEach { h ->
@@ -1106,10 +1077,9 @@ class ReaderOverlayController(
     /** Shows a bottom sheet for viewing a highlight and adding/editing a note. */
     fun showHighlightNoteSheet(highlightId: Long) {
         callbacks.lifecycleScope.launch(Dispatchers.IO) {
-            val repo = BookRepository(callbacks.applicationContext)
             // Find the highlight by loading all highlights for this book and finding by id.
             val href = state.epub?.spine?.getOrNull(state.spineIndex)?.href ?: return@launch
-            val highlights = repo.getHighlightsForChapter(state.bookId, href)
+            val highlights = config.highlightService.getForChapter(state.bookId, href)
             val highlight = highlights.find { it.id == highlightId } ?: return@launch
             withContext(Dispatchers.Main) {
                 val dialog = BottomSheetDialog(config.activity)
@@ -1154,14 +1124,14 @@ class ReaderOverlayController(
                     setOnClickListener {
                         dialog.dismiss()
                         callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                            repo.deleteHighlight(highlight)
+                            config.highlightService.delete(highlight)
                             withContext(Dispatchers.Main) {
                                 removeHighlightDecorationsFromWebView(highlightId)
                                 Snackbar
                                     .make(config.root, R.string.highlight_deleted, Snackbar.LENGTH_LONG)
                                     .setAction(R.string.undo) {
                                         callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                                            repo.addHighlight(highlight)
+                                            config.highlightService.restore(highlight)
                                             withContext(Dispatchers.Main) {
                                                 val currentHref = state.epub?.spine?.getOrNull(state.spineIndex)?.href
                                                 if (currentHref == highlight.spineHref) {
@@ -1189,7 +1159,7 @@ class ReaderOverlayController(
                         val note = input.text.toString().trim().ifEmpty { null }
                         dialog.dismiss()
                         callbacks.lifecycleScope.launch(Dispatchers.IO) {
-                            repo.updateHighlightNote(highlightId, note)
+                            config.highlightService.updateNote(highlightId, note)
                         }
                         Snackbar.make(config.root, R.string.highlight_note_saved, Snackbar.LENGTH_SHORT).show()
                     }

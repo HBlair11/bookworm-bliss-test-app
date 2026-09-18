@@ -25,8 +25,7 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.epubreader.app.R
-import com.epubreader.app.data.AppDatabase
-import com.epubreader.app.data.DictionaryHistoryEntity
+import com.epubreader.app.features.define.DefinitionService
 import com.epubreader.app.epub.DictionaryLookup
 import com.epubreader.app.epub.EpubBook
 import com.epubreader.app.epub.ReaderSelectionLocator
@@ -69,6 +68,8 @@ class ReaderSelectionController(
         val layoutInflater: LayoutInflater,
         val handler: Handler,
         val applicationContext: Context,
+        // Phase 7 feature service — owns dictionary lifecycle + history.
+        val definitionService: DefinitionService,
     )
 
     interface State {
@@ -83,7 +84,6 @@ class ReaderSelectionController(
         var consumingSelectionDismissTap: Boolean
         var suppressReaderTapUntilMs: Long
         var definitionPopup: PopupWindow?
-        var dictionaryLookup: DictionaryLookup?
     }
 
     interface Callbacks {
@@ -445,11 +445,10 @@ class ReaderSelectionController(
             // Language follows the EPUB's dc:language so multi-language
             // libraries switch dictionaries automatically (falls back to
             // English when no matching dict/<lang>.db asset is bundled).
+            // Dictionary lifecycle (language switching, close) is owned by
+            // the DefinitionService (Phase 7).
             val lang = state.epub?.metadata?.language
-            val lookup = state.dictionaryLookup?.takeIf { it.matchesLanguage(lang) }
-                ?: DictionaryLookup(config.applicationContext, lang ?: DictionaryLookup.DEFAULT_LANGUAGE)
-                    .also { state.dictionaryLookup?.close(); state.dictionaryLookup = it }
-            val result = lookup.lookup(raw)
+            val result = config.definitionService.define(raw, lang)
             withContext(Dispatchers.Main) {
                 if (state.isFinishing || state.isDestroyed) return@withContext
                 showDefinitionCard(raw, result, selection)
@@ -531,33 +530,12 @@ class ReaderSelectionController(
         }
 
         // Persist the lookup in the offline vocabulary history (IO thread).
+        // Ownership moved to DefinitionService (Phase 7); recorded only when
+        // a definition card is actually shown, matching the original behavior.
         if (result.entries.isNotEmpty()) {
             val bookId = state.bookId
             callbacks.launchIo {
-                val db = AppDatabase.get(config.applicationContext)
-                val definition = result.entries.firstOrNull()?.definition
-                val partOfSpeech = result.entries.firstOrNull()?.partOfSpeech
-                // Prefer the dictionary's normalized match so punctuation
-                // variants don't create odd history entries.
-                val word = (result.matchedWord ?: raw).trim().lowercase(java.util.Locale.US)
-                if (word.isBlank()) return@launchIo
-                val existing = db.dictionaryHistoryDao().find(word)
-                if (existing == null) {
-                    db.dictionaryHistoryDao().insert(
-                        DictionaryHistoryEntity(
-                            word = word,
-                            definition = definition,
-                            partOfSpeech = partOfSpeech,
-                            bookId = bookId,
-                            lookedUpAt = System.currentTimeMillis(),
-                        )
-                    )
-                } else {
-                    // Re-lookups move the word back to the top of the list.
-                    db.dictionaryHistoryDao().refresh(
-                        existing.id, definition, partOfSpeech, bookId, System.currentTimeMillis(),
-                    )
-                }
+                config.definitionService.recordLookup(raw, result, bookId)
             }
         }
 

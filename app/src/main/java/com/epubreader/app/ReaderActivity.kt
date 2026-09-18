@@ -50,12 +50,18 @@ import com.epubreader.app.data.PrefsManager
 import com.epubreader.app.data.TtsSettingsEntity
 import com.epubreader.app.epub.ReaderSelectionLocator
 import com.epubreader.app.databinding.ActivityReaderBinding
+import com.epubreader.app.epub.DictionaryLookup
 import com.epubreader.app.epub.EpubBook
 import com.epubreader.app.epub.EpubParser
 import com.epubreader.app.epub.EpubResourceResolver
-import com.epubreader.app.epub.EpubSearchEngine
 import com.epubreader.app.epub.ReaderPageMapping
 import com.epubreader.app.epub.ReaderTtsController
+import com.epubreader.app.epub.ReaderTtsSegment
+import com.epubreader.app.features.annotation.BookmarkService
+import com.epubreader.app.features.annotation.HighlightService
+import com.epubreader.app.features.define.DefinitionService
+import com.epubreader.app.features.search.ReaderSearchService
+import com.epubreader.app.features.tts.ReaderTtsCoordinator
 import com.epubreader.app.tts.ReaderTtsService
 import com.epubreader.app.ui.BookmarkAdapter
 import com.epubreader.app.ui.HighlightListAdapter
@@ -100,8 +106,25 @@ class ReaderActivity : AppCompatActivity() {
      *  The entire gesture (DOWN → MOVE → UP) is consumed so it never reaches the
      *  GestureDetector. Patch v37. */
     private var consumingSelectionDismissTap = false
-    private var dictionaryLookup: com.epubreader.app.epub.DictionaryLookup? = null
-    private var ttsController: ReaderTtsController? = null
+    // Phase 7 feature services: own annotation/dictionary/TTS feature logic
+    // so the activity only wires screens together.
+    private val bookmarkService by lazy { BookmarkService(db.bookmarkDao()) }
+    private val highlightService by lazy { HighlightService(db.highlightDao()) }
+    private val searchService by lazy { ReaderSearchService() }
+    private val definitionService by lazy {
+        DefinitionService(
+            historyDao = db.dictionaryHistoryDao(),
+            lookupFactory = { lang -> DictionaryLookup(applicationContext, lang) },
+        )
+    }
+
+    /** Read-aloud coordinator (Phase 7): owns the engine + service lifecycle. */
+    private lateinit var ttsCoordinator: ReaderTtsCoordinator
+
+    /** The live engine, or null before/after the coordinator's lifetime —
+     *  kept as a computed property so every existing call site keeps working. */
+    private val ttsController: ReaderTtsController?
+        get() = if (::ttsCoordinator.isInitialized) ttsCoordinator.controller else null
     private var readingSessionStartedAt: Long? = null
     private var readingSessionLastInteractionAt: Long = 0L
 
@@ -297,46 +320,58 @@ class ReaderActivity : AppCompatActivity() {
         setupOverlayController()
         setupSelectionController()
         setupTtsUiController()
-        ttsController = ReaderTtsController(applicationContext, { playing ->
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                updateTtsControlsUi(playing)
-                updateTtsServiceState()
-            }
-        }, {
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                val next = epub?.let { it.spine.getOrNull(spineIndex + 1) }
-                if (next != null) {
-                    goToSpine(spineIndex + 1)
-                    handler.postDelayed({ startTtsForCurrentChapter() }, 450)
-                } else {
-                    binding.tvTtsStatus.text = getString(R.string.action_read_aloud)
+        ttsCoordinator = ReaderTtsCoordinator(applicationContext, object : ReaderTtsCoordinator.Listener {
+            override fun onPlayingChanged(playing: Boolean) {
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    updateTtsControlsUi(playing)
+                    updateTtsServiceState()
                 }
             }
-        }, { segment, start, end ->
-            // Word-level range callback. The controller reports offsets against
-            // the full structural segment even when it is resuming a suffix.
-            runOnUiThread { highlightSpokenWord(segment, start, end) }
-        }, { remainingMs ->
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                binding.tvTtsStatus.text = getString(R.string.tts_sleep_remaining, (remainingMs / 60000L).toInt() + 1)
+
+            override fun onChapterFinished() {
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    val next = epub?.let { it.spine.getOrNull(spineIndex + 1) }
+                    if (next != null) {
+                        goToSpine(spineIndex + 1)
+                        handler.postDelayed({ startTtsForCurrentChapter() }, 450)
+                    } else {
+                        binding.tvTtsStatus.text = getString(R.string.action_read_aloud)
+                    }
+                }
             }
-        }, {
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                Snackbar.make(binding.root, R.string.tts_sleep_finished, Snackbar.LENGTH_SHORT).show()
+
+            override fun onWordRange(segment: ReaderTtsSegment, start: Int, end: Int) {
+                // Word-level range callback. The controller reports offsets against
+                // the full structural segment even when it is resuming a suffix.
+                runOnUiThread { highlightSpokenWord(segment, start, end) }
             }
-        }, { segment ->
-            // Sentence-level highlight is anchored to the structural TTS
-            // segment, not found by searching the whole chapter for a string.
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                highlightSpokenWord(segment, 0, segment.text.length)
+
+            override fun onSleepTick(remainingMs: Long) {
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    binding.tvTtsStatus.text = getString(R.string.tts_sleep_remaining, (remainingMs / 60000L).toInt() + 1)
+                }
+            }
+
+            override fun onSleepFinished() {
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    Snackbar.make(binding.root, R.string.tts_sleep_finished, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onSentenceHighlight(segment: ReaderTtsSegment) {
+                // Sentence-level highlight is anchored to the structural TTS
+                // segment, not found by searching the whole chapter for a string.
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    highlightSpokenWord(segment, 0, segment.text.length)
+                }
             }
         })
-        ReaderTtsService.attach(ttsController)
+        ttsCoordinator.start()
         setupChrome()
         setupOverlays()
         loadBook()
@@ -492,6 +527,7 @@ class ReaderActivity : AppCompatActivity() {
                 layoutInflater = layoutInflater,
                 handler = handler,
                 applicationContext = applicationContext,
+                definitionService = definitionService,
             ),
             state = object : ReaderSelectionController.State {
                 override val epub: EpubBook? get() = this@ReaderActivity.epub
@@ -516,9 +552,6 @@ class ReaderActivity : AppCompatActivity() {
                 override var definitionPopup: PopupWindow?
                     get() = this@ReaderActivity.definitionPopup
                     set(value) { this@ReaderActivity.definitionPopup = value }
-                override var dictionaryLookup: com.epubreader.app.epub.DictionaryLookup?
-                    get() = this@ReaderActivity.dictionaryLookup
-                    set(value) { this@ReaderActivity.dictionaryLookup = value }
             },
             callbacks = object : ReaderSelectionController.Callbacks {
                 override fun captureCurrentSelection(onCaptured: ((ReaderSelectionLocator?) -> Unit)?) =
@@ -634,6 +667,9 @@ class ReaderActivity : AppCompatActivity() {
                 root = binding.root,
                 handler = handler,
                 readerHistory = binding.readerHistory,
+                bookmarkService = bookmarkService,
+                highlightService = highlightService,
+                searchService = searchService,
             ),
             state = object : ReaderOverlayController.State {
                 override val epub: EpubBook? get() = this@ReaderActivity.epub
@@ -747,8 +783,6 @@ class ReaderActivity : AppCompatActivity() {
                 override fun sectionLabel() = this@ReaderActivity.sectionLabel()
                 override fun themeColor(attr: Int) = this@ReaderActivity.themeColor(attr)
                 override fun getString(resId: Int, vararg args: Any) = this@ReaderActivity.getString(resId, *args)
-                override val db: AppDatabase get() = this@ReaderActivity.db
-                override val applicationContext: android.content.Context get() = this@ReaderActivity.applicationContext
                 override val lifecycleScope: androidx.lifecycle.LifecycleCoroutineScope get() = this@ReaderActivity.lifecycleScope
             },
         )
@@ -2128,10 +2162,9 @@ class ReaderActivity : AppCompatActivity() {
         ReaderTtsService.stop(applicationContext)
         binding.webView.destroy()
         binding.measureWebView.destroy()
-        dictionaryLookup?.close()
-        dictionaryLookup = null
-        ttsController?.close()
-        ttsController = null
+        definitionService.close()
+        searchService.cancel()
+        ttsCoordinator.close()
         super.onDestroy()
     }
 
@@ -2175,21 +2208,6 @@ class ReaderActivity : AppCompatActivity() {
          *  instead of a flicker. Tune this one number to speed up/slow down the
          *  animation app-wide. */
         const val PAGE_TURN_DURATION_MS = 340L
-
-        // Highlight colors — stored as Int ARGB in the DB, rendered as rgba() in CSS.
-        // The color Int is the full-opacity color; the CSS uses 40% opacity for a
-        // subtle highlight that doesn't obscure the text underneath.
-        const val HIGHLIGHT_YELLOW = 0xFFFFEB3B.toInt()
-        const val HIGHLIGHT_GREEN = 0xFF66BB6A.toInt()
-        const val HIGHLIGHT_BLUE = 0xFF42A5F5.toInt()
-        const val HIGHLIGHT_PURPLE = 0xFFAB47BC.toInt()
-
-        fun highlightCssColor(color: Int): String {
-            val r = android.graphics.Color.red(color)
-            val g = android.graphics.Color.green(color)
-            val b = android.graphics.Color.blue(color)
-            return "rgba($r,$g,$b,0.4)"
-        }
     }
 
     override fun onActionModeStarted(mode: ActionMode) = selectionController.onActionModeStarted(mode)

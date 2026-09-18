@@ -6,6 +6,21 @@ import java.io.File
 import java.util.Locale
 
 /**
+ * Dictionary lookup abstraction used by the DefinitionService (Phase 7).
+ *
+ * Lives next to [DictionaryLookup] so the legacy epub layer never depends on
+ * feature code, while services and tests can depend on this interface and
+ * substitute an in-memory implementation.
+ */
+interface DictionarySource : AutoCloseable {
+    /** Look up [raw] (a trimmed selection) in this dictionary. */
+    fun lookup(raw: String): DictionaryLookup.Result
+
+    /** True when this dictionary serves [language] (null = default). */
+    fun matchesLanguage(language: String?): Boolean
+}
+
+/**
  * Local-only dictionary backed by the bundled SQLite dataset in assets/dict/
  * (WordNet-derived for English; additional languages can be dropped in as
  * dict/<lang>.db files with the same schema).
@@ -27,7 +42,8 @@ import java.util.Locale
  * storage on first use and refreshed when the bundled asset version
  * (PRAGMA user_version) is newer than the installed copy.
  */
-class DictionaryLookup(context: Context, language: String = DEFAULT_LANGUAGE) : AutoCloseable {
+
+class DictionaryLookup(context: Context, language: String = DEFAULT_LANGUAGE) : DictionarySource {
 
     data class Entry(val word: String, val partOfSpeech: String, val definition: String)
 
@@ -50,7 +66,7 @@ class DictionaryLookup(context: Context, language: String = DEFAULT_LANGUAGE) : 
     }
 
     /** Full lookup for a raw selection (single word or phrase). */
-    fun lookup(raw: String): Result {
+    override fun lookup(raw: String): Result {
         val phrase = normalize(raw)
         if (phrase.isBlank()) return Result(emptyList(), null, emptyList())
 
@@ -106,7 +122,7 @@ class DictionaryLookup(context: Context, language: String = DEFAULT_LANGUAGE) : 
 
     /** True when this instance's dictionary language matches the given tag
      *  (compares the primary subtag only: "pt-BR" matches a "pt" db). */
-    fun matchesLanguage(language: String?): Boolean {
+    override fun matchesLanguage(language: String?): Boolean {
         val other = language?.substringBefore('-')?.substringBefore('_')
             ?.lowercase(Locale.US).orEmpty()
         return other.isBlank() && languageTag == DEFAULT_LANGUAGE || other == languageTag
