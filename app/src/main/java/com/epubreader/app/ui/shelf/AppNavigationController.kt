@@ -184,6 +184,10 @@ class AppNavigationController(
      * title, FAB, menu invalidation, Home visibility, and the Currently
      * Reading swipe-to-dismiss wiring. */
     fun applyView(view: ShelfView) {
+        // Belt-and-suspenders guard: if the toggle hasn't been assigned yet
+        // (e.g. an observer fires before the Activity assigns it in onCreate),
+        // skip the fan-out rather than crash with UninitializedPropertyAccessException.
+        if (!::drawerToggle.isInitialized) return
         // Up affordance: top-level views show the hamburger (opens drawer);
         // detail views (author/series) and the Patch 16 "Recently Added" temp
         // screen show a back arrow that returns to the previous view — it must
