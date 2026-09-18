@@ -101,7 +101,7 @@
                 android:layout_marginStart="@dimen/row_content_padding_h"
                 android:layout_marginTop="@dimen/spacing_md"
                 android:layout_marginEnd="@dimen/row_content_padding_h"
-                android:background="?attr/colorSurfaceVariant"
+                android:background="?attr/livreColorSurfaceVariant"
                 android:orientation="vertical"
                 android:padding="14dp"
                 android:visibility="gone">
