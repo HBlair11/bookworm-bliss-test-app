@@ -126,6 +126,7 @@ class ReaderWebViewController(
                     "if(window.Caesura){window.Caesura.apply();}"
                 ) {
                     if (generation != pageLoadGeneration) return@evaluateJavascript
+                    installSelectionTracking()
                     onPageFinished()
                 }
             }
@@ -169,14 +170,235 @@ class ReaderWebViewController(
      * @param onCaptured Callback receiving the selection locator, or null
      *                   if no selection is active.
      */
+    /**
+     * Installs one document-local selection cache. The cache is updated from
+     * selectionchange plus the pointer-up events that commonly race the native
+     * Android ActionMode. The action button then reads the last stable snapshot
+     * instead of asking Chromium for a brand-new selection after the toolbar has
+     * appeared.
+     */
+    private fun installSelectionTracking() {
+        webView.evaluateJavascript(
+            """(function(){
+                if(window.LivreSelectionState && window.LivreSelectionState.installed)return;
+                var state=window.LivreSelectionState=window.LivreSelectionState||{};
+                state.installed=true;
+                state.snapshot=null;
+
+                function elementPath(n){
+                    var parts=[];
+                    while(n&&n.nodeType===1){
+                        var idx=0,q=n.previousElementSibling;
+                        while(q){
+                            if(q.tagName===n.tagName)idx++;
+                            q=q.previousElementSibling;
+                        }
+                        parts.unshift(n.tagName.toLowerCase()+':'+idx);
+                        if(n===document.body)break;
+                        n=n.parentElement;
+                    }
+                    return parts.join('/');
+                }
+
+                function textPath(n){
+                    if(!n||n.nodeType!==3)return elementPath(n&&n.parentNode);
+                    var parent=n.parentNode;
+                    var base=elementPath(parent),idx=0,q=n.previousSibling;
+                    while(q){
+                        if(q.nodeType===3)idx++;
+                        q=q.previousSibling;
+                    }
+                    return base+'/#text:'+idx;
+                }
+
+                function allTextNodes(){
+                    var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);
+                    var out=[],n;
+                    while((n=walker.nextNode()))out.push(n);
+                    return out;
+                }
+
+                function pointToTextPoint(container,offset,nodes){
+                    if(!container)return null;
+                    if(container.nodeType===3){
+                        var len=(container.textContent||'').length;
+                        return {node:container,offset:Math.max(0,Math.min(Number(offset)||0,len))};
+                    }
+                    if(container.nodeType!==1)return null;
+
+                    // For an Element boundary (the browser uses these for
+                    // selections that begin/end between inline elements), turn
+                    // the child-node offset into a character offset within that
+                    // element, then map that character boundary to a real text node.
+                    var range=document.createRange();
+                    try{
+                        range.selectNodeContents(container);
+                        range.setEnd(container,Math.max(0,Math.min(Number(offset)||0,container.childNodes.length)));
+                        var localLength=range.toString().length;
+                        range.detach();
+                    }catch(e){
+                        try{range.detach();}catch(ignore){}
+                        return null;
+                    }
+
+                    var first=null,last=null,remaining=localLength;
+                    var walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT,null,false);
+                    var n;
+                    while((n=walker.nextNode())){
+                        var len=(n.textContent||'').length;
+                        if(!first && remaining<=len)first={node:n,offset:remaining};
+                        remaining-=len;
+                        last={node:n,offset:len};
+                    }
+                    return first||last||null;
+                }
+
+                function buildSnapshot(){
+                    var sel=window.getSelection&&window.getSelection();
+                    if(!sel||!sel.rangeCount||!sel.toString()){
+                        state.snapshot=null;
+                        return null;
+                    }
+                    var range=sel.getRangeAt(0);
+                    var nodes=allTextNodes();
+                    var start=pointToTextPoint(range.startContainer,range.startOffset,nodes);
+                    var end=pointToTextPoint(range.endContainer,range.endOffset,nodes);
+                    if(!start||!end||!start.node||!end.node){
+                        state.snapshot=null;
+                        return null;
+                    }
+
+                    var startIndex=nodes.indexOf(start.node),endIndex=nodes.indexOf(end.node);
+                    if(startIndex<0||endIndex<0){
+                        state.snapshot=null;
+                        return null;
+                    }
+                    if(startIndex>endIndex || (startIndex===endIndex&&start.offset>end.offset)){
+                        var tmp=start;start=end;end=tmp;
+                        var ti=startIndex;startIndex=endIndex;endIndex=ti;
+                    }
+
+                    var stream='',starts=[],i;
+                    for(i=0;i<nodes.length;i++){
+                        starts.push(stream.length);
+                        stream+=(nodes[i].textContent||'');
+                    }
+                    var absoluteStart=starts[startIndex]+start.offset;
+                    var absoluteEnd=starts[endIndex]+end.offset;
+                    if(absoluteEnd<absoluteStart){
+                        state.snapshot=null;
+                        return null;
+                    }
+                    var text=sel.toString();
+                    if(!text)return null;
+                    var rect=range.getBoundingClientRect();
+                    state.snapshot={
+                        text:text,
+                        spineHref:window.LivreSelectionSpineHref||'',
+                        startPath:textPath(start.node),
+                        startOffset:start.offset,
+                        endPath:textPath(end.node),
+                        endOffset:end.offset,
+                        prefix:stream.slice(Math.max(0,absoluteStart-80),absoluteStart),
+                        suffix:stream.slice(absoluteEnd,absoluteEnd+80),
+                        rectLeft:Math.round(rect.left),
+                        rectTop:Math.round(rect.top),
+                        rectRight:Math.round(rect.right),
+                        rectBottom:Math.round(rect.bottom),
+                    };
+                    return state.snapshot;
+                }
+
+                function refresh(){
+                    try{buildSnapshot();}catch(e){state.snapshot=null;}
+                }
+
+                document.addEventListener('selectionchange',refresh);
+                document.addEventListener('mouseup',function(){setTimeout(refresh,0);},true);
+                document.addEventListener('touchend',function(){setTimeout(refresh,0);},true);
+                refresh();
+            })();""".trimIndent(),
+            null,
+        )
+    }
+
+    /**
+     * Capture the last stable selection snapshot. If the event cache is not
+     * available yet, build one synchronously from the current Range as a safe
+     * fallback. The fallback uses the same element-boundary normalization as the
+     * cache, so element-node selections do not silently become offset 0.
+     */
     fun captureCurrentSelection(onCaptured: ((ReaderSelectionLocator?) -> Unit)? = null) {
         pendingSelectionCallback = onCaptured
         val href = getCurrentSpineHref().orEmpty()
-        if (href.isBlank()) return
+        if (href.isBlank()) {
+            pendingSelectionCallback = null
+            onCaptured?.invoke(null)
+            return
+        }
         val escapedHref = org.json.JSONObject.quote(href)
         webView.evaluateJavascript(
-            "(function(){var s=window.getSelection&&window.getSelection();if(!s||s.rangeCount===0||!s.toString().trim())return;var r=s.getRangeAt(0);var rect=r.getBoundingClientRect();function p(n){var isText=n&&n.nodeType===3;if(isText){var parent=n.parentNode;var base=p(parent),ti=0,q=n.previousSibling;while(q){if(q.nodeType===3)ti++;q=q.previousSibling;}return base+'/#text:'+ti;}if(n&&n.nodeType!==1)n=n.parentNode;var a=[];while(n&&n.nodeType===1){var i=0,q=n.previousSibling;while(q){if(q.nodeType===n.nodeType&&q.nodeName===n.nodeName)i++;q=q.previousSibling;}a.unshift(n.nodeName.toLowerCase()+':'+i);n=n.parentNode;}return a.join('/');}var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);var allText='',nodes=[];while(walker.nextNode()){nodes.push({node:walker.currentNode,start:allText.length});allText+=walker.currentNode.textContent;}var t=s.toString().trim();var selStart=0,selEnd=0;var sc=r.startContainer,ec=r.endContainer;for(var i=0;i<nodes.length;i++){if(nodes[i].node===sc)selStart=nodes[i].start+r.startOffset;if(nodes[i].node===ec){selEnd=nodes[i].start+r.endOffset;break;}}var prefix=allText.slice(Math.max(0,selStart-40),selStart);var suffix=allText.slice(selEnd,selEnd+40);LivreSelection.onSelectionPayload(t,\" + escapedHref + \",p(r.startContainer),r.startOffset,p(r.endContainer),r.endOffset,prefix,suffix,Math.round(rect.left),Math.round(rect.top),Math.round(rect.right),Math.round(rect.bottom));})();",
-            null
+            """(function(){
+                var href=$escapedHref;
+                if(window.LivreSelectionState && window.LivreSelectionState.snapshot){
+                    var s=window.LivreSelectionState.snapshot;
+                    LivreSelection.onSelectionPayload(s.text,href,s.startPath,s.startOffset,s.endPath,s.endOffset,s.prefix,s.suffix,s.rectLeft,s.rectTop,s.rectRight,s.rectBottom);
+                    return;
+                }
+                var sel=window.getSelection&&window.getSelection();
+                if(!sel||!sel.rangeCount||!sel.toString())return;
+                var range=sel.getRangeAt(0);
+                function ep(n){
+                    var a=[];
+                    while(n&&n.nodeType===1){
+                        var idx=0,q=n.previousElementSibling;
+                        while(q){if(q.tagName===n.tagName)idx++;q=q.previousElementSibling;}
+                        a.unshift(n.tagName.toLowerCase()+':'+idx);
+                        if(n===document.body)break;
+                        n=n.parentElement;
+                    }
+                    return a.join('/');
+                }
+                function tp(n){
+                    if(!n||n.nodeType!==3)return ep(n&&n.parentNode);
+                    var idx=0,q=n.previousSibling;
+                    while(q){if(q.nodeType===3)idx++;q=q.previousSibling;}
+                    return ep(n.parentNode)+'/#text:'+idx;
+                }
+                function toTextPoint(container,offset){
+                    if(container&&container.nodeType===3){
+                        var len=(container.textContent||'').length;
+                        return {node:container,offset:Math.max(0,Math.min(Number(offset)||0,len))};
+                    }
+                    if(!container||container.nodeType!==1)return null;
+                    var r=document.createRange(),len=0;
+                    try{
+                        r.selectNodeContents(container);
+                        r.setEnd(container,Math.max(0,Math.min(Number(offset)||0,container.childNodes.length)));
+                        len=r.toString().length;
+                        r.detach();
+                    }catch(e){try{r.detach();}catch(ignore){}return null;}
+                    var w=document.createTreeWalker(container,NodeFilter.SHOW_TEXT,null,false),n,last=null,remaining=len;
+                    while((n=w.nextNode())){
+                        var l=(n.textContent||'').length;
+                        if(remaining<=l)return {node:n,offset:remaining};
+                        remaining-=l;last=n;
+                    }
+                    return last?{node:last,offset:(last.textContent||'').length}:null;
+                }
+                var a=toTextPoint(range.startContainer,range.startOffset),b=toTextPoint(range.endContainer,range.endOffset);
+                if(!a||!b)return;
+                var rr=range.getBoundingClientRect(),nodes=[],w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),n;
+                while((n=w.nextNode()))nodes.push(n);
+                var ai=nodes.indexOf(a.node),bi=nodes.indexOf(b.node);
+                if(ai<0||bi<0)return;
+                if(ai>bi||(ai===bi&&a.offset>b.offset)){var tmp=a;a=b;b=tmp;var ti=ai;ai=bi;bi=ti;}
+                var stream='',starts=[];
+                for(var i=0;i<nodes.length;i++){starts.push(stream.length);stream+=(nodes[i].textContent||'');}
+                var as=starts[ai]+a.offset,ae=starts[bi]+b.offset;
+                LivreSelection.onSelectionPayload(sel.toString(),href,tp(a.node),a.offset,tp(b.node),b.offset,stream.slice(Math.max(0,as-80),as),stream.slice(ae,ae+80),Math.round(rr.left),Math.round(rr.top),Math.round(rr.right),Math.round(rr.bottom));
+            })();""".trimIndent(),
+            null,
         )
     }
 

@@ -116,11 +116,10 @@ class BookDetailsActivity : AppCompatActivity() {
         // BOOK
         // =========================
 
-        // Phase 10: metadata author value (hero shows author in accent color)
-        binding.bookValue.text =
-            book.author.ifBlank {
-                getString(R.string.unknown_author)
-            }
+        // Phase 10: author is shown both in the hero and in the metadata block.
+        val author = book.author.ifBlank { getString(R.string.unknown_author) }
+        binding.authorValue.text = author
+        binding.bookValue.text = author
 
         // =========================
         // SERIES
@@ -146,6 +145,14 @@ class BookDetailsActivity : AppCompatActivity() {
 
             binding.seriesContainer.visibility = View.GONE
         }
+
+        // =========================
+        // PUBLISHER
+        // =========================
+
+        val publisher = book.publisher?.trim().orEmpty()
+        binding.publisherContainer.visibility = if (publisher.isBlank()) View.GONE else View.VISIBLE
+        binding.publisherValue.text = publisher
 
         // =========================
         // FILENAME

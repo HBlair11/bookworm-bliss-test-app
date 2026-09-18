@@ -483,7 +483,10 @@ class ReaderOverlayController(
     }
 
     fun addBookmarkFromSelection(selection: ReaderSelectionLocator) {
-        val text = selection.text.trim()
+        // Preserve raw selection text for the persisted DOM anchor. Presentation
+        // code may normalize it separately, but the stored text must remain
+        // consistent with the captured offsets.
+        val text = selection.text
         if (text.isBlank()) return
         val href = selection.spineHref
         val selectionAnchor = "__LIVRE_SELECTED_V1__" + org.json.JSONObject().apply {

@@ -22,9 +22,12 @@ class ReaderSelectionBridge(
         rectBottom: Int,
     ) {
         if (text.isBlank() || spineHref.isBlank()) return
+        // Keep the selection text byte-for-byte as reported by the browser.
+        // Trimming here would make the text disagree with the captured DOM
+        // offsets whenever the user's selection starts/ends on whitespace.
         onSelection(
             ReaderSelectionLocator(
-                text = text.trim(),
+                text = text,
                 spineHref = spineHref,
                 startPath = startPath,
                 startOffset = startOffset,
