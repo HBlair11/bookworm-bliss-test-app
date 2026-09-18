@@ -160,7 +160,7 @@ class ReaderSelectionController(
             ).apply {
                 isOutsideTouchable = false
                 isFocusable = false
-                elevation = resources.getDimension(R.dimen.app_definition_card_elevation)
+                elevation = resources.getDimension(R.dimen.definition_card_elevation)
                 setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.reader_selection_toolbar_bg))
             }
 
@@ -194,7 +194,7 @@ class ReaderSelectionController(
         fun refreshPopupPosition() {
             val popupWidth = popup.contentView.measuredWidth
             val popupHeight = popup.contentView.measuredHeight
-            val margin = resources.getDimensionPixelSize(R.dimen.app_screen_edge_h)
+            val margin = resources.getDimensionPixelSize(R.dimen.screen_padding_h)
             val rootWidth = config.rootView.width
             val rootHeight = config.rootView.height
             val maxX = (rootWidth - popupWidth - margin).coerceAtLeast(margin)
@@ -311,8 +311,8 @@ class ReaderSelectionController(
         config.webView.getLocationOnScreen(webViewLocation)
         val scale = config.webView.scale
         val center = ((selection.rectLeft + selection.rectRight) / 2f) * scale
-        val widthEstimate = resources.getDimensionPixelSize(R.dimen.app_selection_toolbar_estimated_width)
-        val margin = resources.getDimensionPixelSize(R.dimen.app_screen_edge_h)
+        val widthEstimate = resources.getDimensionPixelSize(R.dimen.selection_toolbar_estimated_width)
+        val margin = resources.getDimensionPixelSize(R.dimen.screen_padding_h)
         return (webViewLocation[0] + center - widthEstimate / 2f - rootLocation[0]).roundToInt()
             .coerceAtLeast(margin)
     }
@@ -324,8 +324,8 @@ class ReaderSelectionController(
         config.webView.getLocationOnScreen(webViewLocation)
         val scale = config.webView.scale
         val top = webViewLocation[1] + selection.rectTop * scale
-        val toolbarHeight = resources.getDimensionPixelSize(R.dimen.app_selection_toolbar_height)
-        val margin = resources.getDimensionPixelSize(R.dimen.app_screen_edge_h)
+        val toolbarHeight = resources.getDimensionPixelSize(R.dimen.selection_toolbar_height)
+        val margin = resources.getDimensionPixelSize(R.dimen.screen_padding_h)
         return (top - toolbarHeight - margin - rootLocation[1]).roundToInt().coerceAtLeast(margin)
     }
 
@@ -542,7 +542,7 @@ class ReaderSelectionController(
         val density = resources.displayMetrics.density
         val popup = PopupWindow(card, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
             isOutsideTouchable = true
-            elevation = resources.getDimension(R.dimen.app_definition_card_elevation)
+            elevation = resources.getDimension(R.dimen.definition_card_elevation)
         }
         state.definitionPopup = popup
         card.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
@@ -562,7 +562,7 @@ class ReaderSelectionController(
             anchorTop = resources.displayMetrics.heightPixels.toFloat()
             anchorBottom = resources.displayMetrics.heightPixels.toFloat()
         }
-        val margin = resources.getDimension(R.dimen.app_popup_screen_margin)
+        val margin = resources.getDimension(R.dimen.popup_screen_margin)
         val screenW = resources.displayMetrics.widthPixels
         val screenH = resources.displayMetrics.heightPixels
         val x = (anchorLeft - cardW / 2f).roundToInt().coerceIn(margin.toInt(), (screenW - cardW - margin).toInt().coerceAtLeast(margin.toInt()))

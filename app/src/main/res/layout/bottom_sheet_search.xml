@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingTop="8dp">
+    android:paddingTop="@dimen/spacing_sm">
 
     <EditText
         android:id="@+id/searchEdit"
@@ -11,13 +11,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="@dimen/spacing_sm"
         android:background="@drawable/cover_frame"
         android:hint="@string/search_hint"
         android:imeOptions="actionSearch"
         android:inputType="text"
-        android:padding="12dp"
-        android:textSize="14sp" />
+        android:padding="@dimen/spacing_md"
+        android:textSize="@dimen/text_size_body" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
@@ -25,5 +25,5 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="24dp" />
+        android:paddingBottom="@dimen/spacing_xl" />
 </LinearLayout>

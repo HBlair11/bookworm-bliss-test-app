@@ -30,24 +30,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/app_row_content_padding_h">
+            android:padding="@dimen/row_content_padding_h">
 
             <!-- Privacy banner -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/spacing_xs"
                 android:gravity="center"
                 android:text="@string/stats_privacy"
                 android:textColor="?android:textColorSecondary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body_small"
                 android:textStyle="italic" />
 
             <!-- Primary stats: two-column grid -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/app_section_spacing"
+                android:layout_marginTop="@dimen/section_spacing"
                 android:orientation="horizontal"
                 android:weightSum="2">
 
@@ -56,31 +56,31 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginEnd="@dimen/spacing_sm"
                     app:cardBackgroundColor="?attr/colorSurface"
-                    app:cardCornerRadius="@dimen/app_card_corner"
+                    app:cardCornerRadius="@dimen/card_corner_radius"
                     app:cardElevation="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="@dimen/app_card_padding">
+                        android:padding="?attr/livreCardPadding">
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_time_week"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_overline" />
 
                         <TextView
                             android:id="@+id/statsWeek"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/spacing_xs"
                             android:textColor="?android:textColorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="@dimen/text_size_title_large"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -90,31 +90,31 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="@dimen/spacing_sm"
                     app:cardBackgroundColor="?attr/colorSurface"
-                    app:cardCornerRadius="@dimen/app_card_corner"
+                    app:cardCornerRadius="@dimen/card_corner_radius"
                     app:cardElevation="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="@dimen/app_card_padding">
+                        android:padding="?attr/livreCardPadding">
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_time_year"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_overline" />
 
                         <TextView
                             android:id="@+id/statsYear"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/spacing_xs"
                             android:textColor="?android:textColorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="@dimen/text_size_title_large"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -124,7 +124,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/app_card_spacing"
+                android:layout_marginTop="@dimen/card_spacing"
                 android:orientation="horizontal"
                 android:weightSum="2">
 
@@ -133,31 +133,31 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginEnd="@dimen/spacing_sm"
                     app:cardBackgroundColor="?attr/colorSurface"
-                    app:cardCornerRadius="@dimen/app_card_corner"
+                    app:cardCornerRadius="@dimen/card_corner_radius"
                     app:cardElevation="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="@dimen/app_card_padding">
+                        android:padding="?attr/livreCardPadding">
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_books_finished"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_overline" />
 
                         <TextView
                             android:id="@+id/statsFinished"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/spacing_xs"
                             android:textColor="?android:textColorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="@dimen/text_size_title_large"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -167,31 +167,31 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="@dimen/spacing_sm"
                     app:cardBackgroundColor="?attr/colorSurface"
-                    app:cardCornerRadius="@dimen/app_card_corner"
+                    app:cardCornerRadius="@dimen/card_corner_radius"
                     app:cardElevation="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="@dimen/app_card_padding">
+                        android:padding="?attr/livreCardPadding">
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_current_streak"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_overline" />
 
                         <TextView
                             android:id="@+id/statsStreak"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/spacing_xs"
                             android:textColor="?android:textColorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="@dimen/text_size_title_large"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -201,31 +201,31 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/app_card_spacing"
+                android:layout_marginTop="@dimen/card_spacing"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="@dimen/app_card_corner"
+                app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/app_card_padding">
+                    android:padding="?attr/livreCardPadding">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/stats_chapters"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="13sp" />
+                        android:textSize="@dimen/text_size_body_small" />
 
                     <TextView
                         android:id="@+id/statsChapters"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="@dimen/spacing_xs"
                         android:textColor="?android:textColorPrimary"
-                        android:textSize="18sp" />
+                        android:textSize="@dimen/text_size_title" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -233,31 +233,31 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/app_card_spacing"
+                android:layout_marginTop="@dimen/card_spacing"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="@dimen/app_card_corner"
+                app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/app_card_padding">
+                    android:padding="?attr/livreCardPadding">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/stats_pages"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="13sp" />
+                        android:textSize="@dimen/text_size_body_small" />
 
                     <TextView
                         android:id="@+id/statsPages"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="@dimen/spacing_xs"
                         android:textColor="?android:textColorPrimary"
-                        android:textSize="18sp" />
+                        android:textSize="@dimen/text_size_title" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

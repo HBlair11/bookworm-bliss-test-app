@@ -7,9 +7,9 @@
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical"
-    android:minHeight="48dp"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp">
+    android:minHeight="@dimen/touch_target"
+    android:paddingStart="@dimen/spacing_xl"
+    android:paddingEnd="@dimen/spacing_xl">
 
     <TextView
         android:id="@+id/title"
@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textColor="?android:textColorPrimary"
-        android:textSize="15sp" />
+        android:textSize="@dimen/text_size_body_medium" />
 
     <ImageView
         android:id="@+id/check"
@@ -25,5 +25,5 @@
         android:layout_height="20dp"
         android:contentDescription="@string/confirm"
         android:src="@drawable/ic_check"
-        android:tint="@color/accent" />
+        android:tint="?attr/colorPrimary" />
 </LinearLayout>

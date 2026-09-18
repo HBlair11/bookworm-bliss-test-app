@@ -20,14 +20,14 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/app_row_content_padding_h"
-        android:layout_marginTop="@dimen/app_row_padding_v"
-        android:layout_marginEnd="@dimen/app_row_content_padding_h"
-        android:layout_marginBottom="@dimen/app_row_padding_v"
-        app:boxStrokeColor="@color/accent"
+        android:layout_marginStart="@dimen/row_content_padding_h"
+        android:layout_marginTop="@dimen/row_padding_v"
+        android:layout_marginEnd="@dimen/row_content_padding_h"
+        android:layout_marginBottom="@dimen/row_padding_v"
+        app:boxStrokeColor="?attr/colorPrimary"
         app:hintEnabled="false"
         app:startIconDrawable="@drawable/ic_search"
-        app:startIconTint="@color/secondary">
+        app:startIconTint="?attr/colorSecondary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/searchEdit"
@@ -48,9 +48,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingStart="@dimen/app_grid_edge_h"
-        android:paddingEnd="@dimen/app_grid_edge_h"
-        android:paddingBottom="24dp"
+        android:paddingStart="@dimen/grid_edge_h"
+        android:paddingEnd="@dimen/grid_edge_h"
+        android:paddingBottom="@dimen/spacing_xl"
         android:scrollbars="vertical" />
 
     <LinearLayout
@@ -60,7 +60,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="32dp"
+        android:padding="@dimen/spacing_xxl"
         android:visibility="gone">
 
         <TextView
@@ -69,6 +69,6 @@
             android:layout_height="wrap_content"
             android:text="@string/empty_library"
             android:textColor="?android:textColorSecondary"
-            android:textSize="16sp" />
+            android:textSize="@dimen/text_size_body_large" />
     </LinearLayout>
 </LinearLayout>

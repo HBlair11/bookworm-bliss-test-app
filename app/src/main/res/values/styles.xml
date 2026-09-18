@@ -4,9 +4,9 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">20dp</item>
-        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_xs</item>
         <item name="android:textColor">?android:textColorSecondary</item>
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">@dimen/text_size_body_small</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
     </style>
@@ -15,7 +15,7 @@
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:textSize">12sp</item>
+        <item name="android:textSize">@dimen/text_size_overline</item>
     </style>
 
     <!-- ===== Patch 17: full-screen reader settings activity =====
@@ -27,8 +27,8 @@
          centered (weight 1), and a [+] icon button. Icon-only Material buttons
          with a tint that matches the chrome accent. -->
     <style name="ReaderStepperBtn" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:layout_width">48dp</item>
-        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_width">@dimen/touch_target</item>
+        <item name="android:layout_height">@dimen/touch_target</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:paddingLeft">0dp</item>
@@ -45,7 +45,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
         <item name="android:textColor">?android:textColorPrimary</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">@dimen/text_size_body_large</item>
         <item name="android:textStyle">bold</item>
     </style>
 
@@ -55,7 +55,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">center_vertical</item>
-        <item name="android:minHeight">48dp</item>
+        <item name="android:minHeight">@dimen/touch_target</item>
     </style>
 
     <!-- Wrapper that pads each setting block consistently. -->
@@ -76,8 +76,8 @@
          needed. Tint is NOT set here — see the note inside the style. -->
 
     <style name="EpubReaderIconButton">
-        <item name="android:layout_width">44dp</item>
-        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_width">@dimen/icon_button_size</item>
+        <item name="android:layout_height">@dimen/icon_button_size</item>
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
         <!-- Tint is NOT set here. Icons are white vectors on dark reader chrome,
              so they render white from their own color. Set app:tint on a view only
@@ -87,28 +87,28 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:gravity">center</item>
-        <item name="android:minWidth">@dimen/app_selection_toolbar_action_min_width</item>
-        <item name="android:layout_marginStart">@dimen/app_selection_toolbar_action_margin_h</item>
-        <item name="android:layout_marginEnd">@dimen/app_selection_toolbar_action_margin_h</item>
-        <item name="android:paddingStart">@dimen/app_selection_toolbar_action_padding_h</item>
-        <item name="android:paddingEnd">@dimen/app_selection_toolbar_action_padding_h</item>
-        <item name="android:textColor">@color/reader_chrome_text</item>
-        <item name="android:textSize">@dimen/app_selection_toolbar_text_size</item>
+        <item name="android:minWidth">@dimen/selection_toolbar_action_min_width</item>
+        <item name="android:layout_marginStart">@dimen/selection_toolbar_action_margin_h</item>
+        <item name="android:layout_marginEnd">@dimen/selection_toolbar_action_margin_h</item>
+        <item name="android:paddingStart">@dimen/selection_toolbar_action_padding_h</item>
+        <item name="android:paddingEnd">@dimen/selection_toolbar_action_padding_h</item>
+        <item name="android:textColor">?attr/livreColorReaderChromeText</item>
+        <item name="android:textSize">@dimen/selection_toolbar_text_size</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
 
     <style name="ReaderSelectionToolbarMoreAction" parent="android:style/Widget.ImageButton">
-        <item name="android:layout_width">@dimen/app_selection_toolbar_action_min_width</item>
+        <item name="android:layout_width">@dimen/selection_toolbar_action_min_width</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:gravity">center</item>
-        <item name="android:paddingStart">@dimen/app_selection_toolbar_action_padding_h</item>
-        <item name="android:paddingEnd">@dimen/app_selection_toolbar_action_padding_h</item>
-        <item name="android:layout_marginStart">@dimen/app_selection_toolbar_action_margin_h</item>
-        <item name="android:layout_marginEnd">@dimen/app_selection_toolbar_action_margin_h</item>
-        <item name="android:minWidth">@dimen/app_selection_toolbar_action_min_width</item>
+        <item name="android:paddingStart">@dimen/selection_toolbar_action_padding_h</item>
+        <item name="android:paddingEnd">@dimen/selection_toolbar_action_padding_h</item>
+        <item name="android:layout_marginStart">@dimen/selection_toolbar_action_margin_h</item>
+        <item name="android:layout_marginEnd">@dimen/selection_toolbar_action_margin_h</item>
+        <item name="android:minWidth">@dimen/selection_toolbar_action_min_width</item>
         <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
-        <item name="android:tint">@color/reader_chrome_text</item>
+        <item name="android:tint">?attr/livreColorReaderChromeText</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>

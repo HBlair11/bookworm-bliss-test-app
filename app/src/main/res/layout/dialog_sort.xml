@@ -3,20 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:paddingTop="@dimen/spacing_sm"
+    android:paddingBottom="@dimen/spacing_sm">
 
     <TextView
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="24dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="8dp"
+        android:paddingStart="@dimen/spacing_xl"
+        android:paddingTop="@dimen/spacing_sm"
+        android:paddingEnd="@dimen/spacing_xl"
+        android:paddingBottom="@dimen/spacing_sm"
         android:text="@string/action_sort"
         android:textColor="?android:textColorSecondary"
-        android:textSize="13sp"
+        android:textSize="@dimen/text_size_body_small"
         android:textStyle="bold"
         android:textAllCaps="true" />
 

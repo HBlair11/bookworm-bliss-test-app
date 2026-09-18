@@ -1153,7 +1153,7 @@ class ReaderOverlayController(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                     ).apply {
-                        marginStart = config.activity.resources.getDimensionPixelSize(R.dimen.app_section_spacing)
+                        marginStart = config.activity.resources.getDimensionPixelSize(R.dimen.section_spacing)
                     }
                     setOnClickListener {
                         val note = input.text.toString().trim().ifEmpty { null }

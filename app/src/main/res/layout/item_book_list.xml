@@ -5,11 +5,11 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="10dp"
     android:layout_marginEnd="10dp"
-    android:layout_marginBottom="8dp"
+    android:layout_marginBottom="@dimen/spacing_sm"
     app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="10dp"
     app:cardElevation="0dp"
-    app:strokeColor="@color/light_border"
+    app:strokeColor="?attr/livreColorDivider"
     app:strokeWidth="0.5dp">
 
     <LinearLayout
@@ -33,7 +33,7 @@
             android:id="@+id/infoArea"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/spacing_md"
             android:layout_weight="1"
             android:orientation="vertical"
             android:padding="2dp">
@@ -45,7 +45,7 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="15sp"
+                android:textSize="@dimen/text_size_body_medium"
                 android:textStyle="bold" />
 
             <TextView
@@ -56,7 +56,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="?android:textColorSecondary"
-                android:textSize="12sp" />
+                android:textSize="@dimen/text_size_overline" />
 
             <TextView
                 android:id="@+id/series"
@@ -65,8 +65,8 @@
                 android:layout_marginTop="1dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="@color/secondary"
-                android:textSize="11sp"
+                android:textColor="?attr/colorSecondary"
+                android:textSize="@dimen/text_size_caption"
                 android:visibility="gone" />
 
             <LinearLayout
@@ -92,7 +92,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="11sp" />
+                    android:textSize="@dimen/text_size_caption" />
 
                 <TextView
                     android:id="@+id/completedBadge"
@@ -105,8 +105,8 @@
                     android:paddingEnd="6dp"
                     android:paddingBottom="1dp"
                     android:text="@string/progress_completed"
-                    android:textColor="@color/dark_text"
-                    android:textSize="9sp"
+                    android:textColor="?attr/livreColorSuccess"
+                    android:textSize="@dimen/text_size_cover_label"
                     android:textStyle="bold"
                     android:visibility="gone" />
             </LinearLayout>

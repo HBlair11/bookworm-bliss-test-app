@@ -44,7 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="24dp">
+            android:paddingBottom="@dimen/spacing_xl">
 
 
             <!-- ================================================= -->
@@ -54,10 +54,10 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="@dimen/app_row_content_padding_h"
-                android:paddingEnd="@dimen/app_row_content_padding_h"
-                android:paddingTop="8dp"
-                android:paddingBottom="4dp">
+                android:paddingStart="@dimen/row_content_padding_h"
+                android:paddingEnd="@dimen/row_content_padding_h"
+                android:paddingTop="@dimen/spacing_sm"
+                android:paddingBottom="@dimen/spacing_xs">
 
                 <ImageView
                     android:id="@+id/cover"
@@ -79,12 +79,12 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:gravity="start"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="26sp"
+                android:textSize="@dimen/text_size_headline"
                 android:textStyle="bold"
                 android:textAllCaps="true" />
 
@@ -96,9 +96,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:gravity="start"
                 android:orientation="horizontal">
 
@@ -163,7 +163,7 @@
                     android:contentDescription="@string/option_remove"
                     android:padding="10dp"
                     android:src="@drawable/ic_delete"
-                    app:tint="@color/pop" />
+                    app:tint="?attr/livreColorAccent" />
 
             </LinearLayout>
 
@@ -175,10 +175,10 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:background="@color/light_border" />
+                android:layout_marginStart="@dimen/row_content_padding_h"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
+                android:background="?attr/livreColorDivider" />
 
 
             <!-- ================================================= -->
@@ -188,9 +188,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:orientation="vertical">
 
 
@@ -201,7 +201,7 @@
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/spacing_xs"
                     android:text="@string/book_name" />
 
                 <TextView
@@ -210,7 +210,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
 
                 <!-- AUTHOR -->
@@ -220,7 +220,7 @@
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/book_author" />
 
                 <TextView
@@ -229,7 +229,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
 
                 <!-- SERIES -->
@@ -245,7 +245,7 @@
                         style="@style/ReaderSettingLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="@dimen/spacing_md"
                         android:text="@string/book_series" />
 
                     <TextView
@@ -254,7 +254,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:textColor="?android:textColorPrimary"
-                        android:textSize="15sp" />
+                        android:textSize="@dimen/text_size_body_medium" />
 
                 </LinearLayout>
 
@@ -266,7 +266,7 @@
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/book_filename" />
 
                 <TextView
@@ -275,7 +275,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
 
                 <!-- FILE SIZE -->
@@ -285,7 +285,7 @@
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/book_size" />
 
                 <TextView
@@ -294,7 +294,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
 
                 <!-- LANGUAGE -->
@@ -304,7 +304,7 @@
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/book_language" />
 
                 <TextView
@@ -313,14 +313,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
                 <TextView
                     android:id="@+id/publishYearLabel"
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/book_publish_year" />
 
                 <TextView
@@ -329,14 +329,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
                 <TextView
                     android:id="@+id/subjectsLabel"
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/book_subjects" />
 
                 <TextView
@@ -345,7 +345,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
 
                 <!-- DATE ADDED -->
@@ -355,7 +355,7 @@
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/book_added" />
 
                 <TextView
@@ -364,7 +364,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
 
                 <!-- LAST READ + CURRENT BOOKMARK -->
@@ -380,7 +380,7 @@
                         style="@style/ReaderSettingLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="@dimen/spacing_md"
                         android:text="@string/book_last_read_and_bookmark" />
 
                     <TextView
@@ -389,7 +389,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:textColor="?android:textColorPrimary"
-                        android:textSize="15sp" />
+                        android:textSize="@dimen/text_size_body_medium" />
 
                 </LinearLayout>
 
@@ -403,10 +403,10 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:background="@color/light_border" />
+                android:layout_marginStart="@dimen/row_content_padding_h"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
+                android:background="?attr/livreColorDivider" />
 
 
             <!-- ================================================= -->
@@ -417,9 +417,9 @@
                 android:id="@+id/descriptionContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:orientation="vertical">
 
                 <TextView
@@ -427,7 +427,7 @@
                     style="@style/ReaderSettingLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/spacing_xs"
                     android:text="@string/book_description" />
 
                 <TextView
@@ -437,7 +437,7 @@
                     android:layout_marginTop="2dp"
                     android:lineSpacingExtra="3dp"
                     android:textColor="?android:textColorPrimary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
             </LinearLayout>
 

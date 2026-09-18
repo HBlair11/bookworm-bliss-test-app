@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="120dp"
     android:layout_height="240dp"
-    android:layout_marginEnd="12dp"
+    android:layout_marginEnd="@dimen/spacing_md"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="6dp"
+    app:cardCornerRadius="@dimen/thumbnail_corner_radius"
     app:cardElevation="1dp">
 
     <LinearLayout
@@ -37,8 +37,8 @@
                 android:paddingTop="2dp"
                 android:paddingEnd="6dp"
                 android:paddingBottom="2dp"
-                android:textColor="@color/dark_text"
-                android:textSize="10sp"
+                android:textColor="?attr/livreColorSuccess"
+                android:textSize="@dimen/text_size_cover_label"
                 android:textStyle="bold"
                 android:visibility="gone" />
 
@@ -47,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="3dp"
                 android:layout_gravity="bottom"
-                android:background="@color/progress_track"
+                android:background="?attr/livreColorDisabled"
                 android:visibility="gone" />
 
             <View
@@ -55,7 +55,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="3dp"
                 android:layout_gravity="bottom|start"
-                android:background="@color/progress_fill"
+                android:background="?attr/livreColorSuccess"
                 android:pivotX="0"
                 android:visibility="gone" />
         </FrameLayout>
@@ -64,11 +64,11 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/spacing_sm"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="?android:textColorPrimary"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_overline"
             android:textStyle="bold" />
 
         <TextView
@@ -79,6 +79,6 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="?android:textColorSecondary"
-            android:textSize="11sp" />
+            android:textSize="@dimen/text_size_caption" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

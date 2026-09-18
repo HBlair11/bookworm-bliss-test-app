@@ -7,7 +7,7 @@
     android:clipToPadding="false"
     android:fillViewport="true"
     android:overScrollMode="never"
-    android:paddingBottom="24dp">
+    android:paddingBottom="@dimen/spacing_xl">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,9 +19,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="280dp"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="@dimen/spacing_xxl"
             android:layout_marginTop="72dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginEnd="@dimen/spacing_xxl"
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="gone">
@@ -36,10 +36,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_lg"
                 android:text="@string/home_empty_title"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="20sp"
+                android:textSize="@dimen/text_size_hero"
                 android:textStyle="bold" />
 
             <TextView
@@ -67,23 +67,23 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
                 android:layout_marginTop="26dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:text="@string/home_continue_heading"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="22sp"
+                android:textSize="@dimen/text_size_title_large"
                 android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/homeContinueCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="1dp">
 
                 <LinearLayout
@@ -115,7 +115,7 @@
                             android:ellipsize="end"
                             android:maxLines="3"
                             android:textColor="?android:textColorPrimary"
-                            android:textSize="19sp"
+                            android:textSize="@dimen/text_size_hero"
                             android:textStyle="bold" />
 
                         <TextView
@@ -126,7 +126,7 @@
                             android:ellipsize="end"
                             android:maxLines="2"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="13sp" />
+                            android:textSize="@dimen/text_size_body_small" />
 
                         <TextView
                             android:id="@+id/homeContinueSeries"
@@ -136,7 +136,7 @@
                             android:ellipsize="end"
                             android:maxLines="2"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_overline" />
 
                         <TextView
                             android:id="@+id/homeContinueLocation"
@@ -144,7 +144,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_overline" />
 
                         <TextView
                             android:id="@+id/homeContinueProgress"
@@ -152,14 +152,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_overline" />
                     </LinearLayout>
 
                     <ImageButton
                         android:id="@+id/homeContinueButton"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="@dimen/spacing_sm"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/continue_reading"
                         android:src="@drawable/ic_menu_book"
@@ -177,12 +177,12 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
                 android:layout_marginTop="30dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:text="@string/home_recently_added"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_title"
                 android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -192,10 +192,10 @@
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never"
-                android:paddingStart="@dimen/app_row_content_padding_h"
-                android:paddingEnd="@dimen/app_row_content_padding_h"
+                android:paddingStart="@dimen/row_content_padding_h"
+                android:paddingEnd="@dimen/row_content_padding_h"
                 android:paddingTop="10dp"
-                android:paddingBottom="8dp" />
+                android:paddingBottom="@dimen/spacing_sm" />
         </LinearLayout>
 
         <LinearLayout
@@ -207,12 +207,12 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
                 android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:text="@string/home_favorites"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_title"
                 android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -222,10 +222,10 @@
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never"
-                android:paddingStart="@dimen/app_row_content_padding_h"
-                android:paddingEnd="@dimen/app_row_content_padding_h"
+                android:paddingStart="@dimen/row_content_padding_h"
+                android:paddingEnd="@dimen/row_content_padding_h"
                 android:paddingTop="10dp"
-                android:paddingBottom="8dp" />
+                android:paddingBottom="@dimen/spacing_sm" />
         </LinearLayout>
 
         <LinearLayout
@@ -237,12 +237,12 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
                 android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:text="@string/home_top_authors"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_title"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -254,11 +254,11 @@
                     android:id="@+id/homeAuthorTitle1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/app_row_content_padding_h"
+                    android:layout_marginStart="@dimen/row_content_padding_h"
                     android:layout_marginTop="10dp"
-                    android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                    android:layout_marginEnd="@dimen/row_content_padding_h"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/text_size_body_small"
                     android:textStyle="bold" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeAuthorBooks1"
@@ -267,10 +267,10 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never"
-                    android:paddingStart="@dimen/app_row_content_padding_h"
-                    android:paddingEnd="@dimen/app_row_content_padding_h"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp" />
+                    android:paddingStart="@dimen/row_content_padding_h"
+                    android:paddingEnd="@dimen/row_content_padding_h"
+                    android:paddingTop="@dimen/spacing_sm"
+                    android:paddingBottom="@dimen/spacing_sm" />
             </LinearLayout>
 
             <LinearLayout
@@ -282,11 +282,11 @@
                     android:id="@+id/homeAuthorTitle2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/app_row_content_padding_h"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                    android:layout_marginStart="@dimen/row_content_padding_h"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:layout_marginEnd="@dimen/row_content_padding_h"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/text_size_body_small"
                     android:textStyle="bold" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeAuthorBooks2"
@@ -295,10 +295,10 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never"
-                    android:paddingStart="@dimen/app_row_content_padding_h"
-                    android:paddingEnd="@dimen/app_row_content_padding_h"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp" />
+                    android:paddingStart="@dimen/row_content_padding_h"
+                    android:paddingEnd="@dimen/row_content_padding_h"
+                    android:paddingTop="@dimen/spacing_sm"
+                    android:paddingBottom="@dimen/spacing_sm" />
             </LinearLayout>
 
             <LinearLayout
@@ -310,11 +310,11 @@
                     android:id="@+id/homeAuthorTitle3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/app_row_content_padding_h"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                    android:layout_marginStart="@dimen/row_content_padding_h"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:layout_marginEnd="@dimen/row_content_padding_h"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/text_size_body_small"
                     android:textStyle="bold" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeAuthorBooks3"
@@ -323,10 +323,10 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never"
-                    android:paddingStart="@dimen/app_row_content_padding_h"
-                    android:paddingEnd="@dimen/app_row_content_padding_h"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp" />
+                    android:paddingStart="@dimen/row_content_padding_h"
+                    android:paddingEnd="@dimen/row_content_padding_h"
+                    android:paddingTop="@dimen/spacing_sm"
+                    android:paddingBottom="@dimen/spacing_sm" />
             </LinearLayout>
         </LinearLayout>
 
@@ -339,12 +339,12 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginStart="@dimen/row_content_padding_h"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:layout_marginEnd="@dimen/row_content_padding_h"
                 android:text="@string/home_top_series"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_title"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -356,11 +356,11 @@
                     android:id="@+id/homeSeriesTitle1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/app_row_content_padding_h"
+                    android:layout_marginStart="@dimen/row_content_padding_h"
                     android:layout_marginTop="10dp"
-                    android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                    android:layout_marginEnd="@dimen/row_content_padding_h"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/text_size_body_small"
                     android:textStyle="bold" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeSeriesBooks1"
@@ -369,10 +369,10 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never"
-                    android:paddingStart="@dimen/app_row_content_padding_h"
-                    android:paddingEnd="@dimen/app_row_content_padding_h"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp" />
+                    android:paddingStart="@dimen/row_content_padding_h"
+                    android:paddingEnd="@dimen/row_content_padding_h"
+                    android:paddingTop="@dimen/spacing_sm"
+                    android:paddingBottom="@dimen/spacing_sm" />
             </LinearLayout>
 
             <LinearLayout
@@ -384,11 +384,11 @@
                     android:id="@+id/homeSeriesTitle2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/app_row_content_padding_h"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                    android:layout_marginStart="@dimen/row_content_padding_h"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:layout_marginEnd="@dimen/row_content_padding_h"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/text_size_body_small"
                     android:textStyle="bold" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeSeriesBooks2"
@@ -397,10 +397,10 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never"
-                    android:paddingStart="@dimen/app_row_content_padding_h"
-                    android:paddingEnd="@dimen/app_row_content_padding_h"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp" />
+                    android:paddingStart="@dimen/row_content_padding_h"
+                    android:paddingEnd="@dimen/row_content_padding_h"
+                    android:paddingTop="@dimen/spacing_sm"
+                    android:paddingBottom="@dimen/spacing_sm" />
             </LinearLayout>
 
             <LinearLayout
@@ -412,11 +412,11 @@
                     android:id="@+id/homeSeriesTitle3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/app_row_content_padding_h"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                    android:layout_marginStart="@dimen/row_content_padding_h"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:layout_marginEnd="@dimen/row_content_padding_h"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/text_size_body_small"
                     android:textStyle="bold" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeSeriesBooks3"
@@ -425,10 +425,10 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never"
-                    android:paddingStart="@dimen/app_row_content_padding_h"
-                    android:paddingEnd="@dimen/app_row_content_padding_h"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp" />
+                    android:paddingStart="@dimen/row_content_padding_h"
+                    android:paddingEnd="@dimen/row_content_padding_h"
+                    android:paddingTop="@dimen/spacing_sm"
+                    android:paddingBottom="@dimen/spacing_sm" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

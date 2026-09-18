@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/app_grid_edge_h"
-    android:layout_marginEnd="@dimen/app_grid_edge_h"
+    android:layout_marginStart="@dimen/grid_edge_h"
+    android:layout_marginEnd="@dimen/grid_edge_h"
     android:layout_marginBottom="14dp"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="6dp"
+    app:cardCornerRadius="@dimen/thumbnail_corner_radius"
     app:cardElevation="1dp">
 
     <LinearLayout
@@ -43,8 +43,8 @@
                 android:paddingTop="2dp"
                 android:paddingEnd="6dp"
                 android:paddingBottom="2dp"
-                android:textColor="@color/dark_text"
-                android:textSize="10sp"
+                android:textColor="?attr/livreColorSuccess"
+                android:textSize="@dimen/text_size_cover_label"
                 android:textStyle="bold"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="@id/cover"
@@ -55,7 +55,7 @@
                 android:id="@+id/progressTrack"
                 android:layout_width="0dp"
                 android:layout_height="3dp"
-                android:background="@color/progress_track"
+                android:background="?attr/livreColorDisabled"
                 app:layout_constraintBottom_toBottomOf="@id/cover"
                 app:layout_constraintStart_toStartOf="@id/cover"
                 app:layout_constraintEnd_toEndOf="@id/cover" />
@@ -64,7 +64,7 @@
                 android:id="@+id/progressFill"
                 android:layout_width="0dp"
                 android:layout_height="3dp"
-                android:background="@color/progress_fill"
+                android:background="?attr/livreColorSuccess"
                 app:layout_constraintBottom_toBottomOf="@id/cover"
                 app:layout_constraintStart_toStartOf="@id/cover"
                 app:layout_constraintEnd_toEndOf="@id/progressTrack" />
@@ -78,7 +78,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:textColor="?android:textColorPrimary"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_overline"
             android:textStyle="bold" />
 
         <TextView
@@ -89,6 +89,6 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="?android:textColorSecondary"
-            android:textSize="11sp" />
+            android:textSize="@dimen/text_size_caption" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

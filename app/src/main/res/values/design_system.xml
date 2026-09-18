@@ -123,6 +123,12 @@
     <dimen name="icon_small">16dp</dimen>
     <dimen name="icon_medium">24dp</dimen>
     <dimen name="icon_large">32dp</dimen>
+    <!-- Icon glyph inset within a 44dp icon button = (44-24)/2 = 10dp.
+         Reader chrome text rows use this to align to the icon glyph
+         keyline (Phase 9: migrated from legacy app_reader_icon_inset). -->
+    <dimen name="reader_icon_inset">10dp</dimen>
+    <!-- Seeker prev/prev chapter button touch target (reader chrome). -->
+    <dimen name="seeker_button_size">40dp</dimen>
 
     <!-- Toolbar / Chrome -->
     <dimen name="toolbar_height">56dp</dimen>
@@ -180,8 +186,16 @@
     <dimen name="text_size_overline">12sp</dimen>
     <dimen name="text_size_body_small">13sp</dimen>
     <dimen name="text_size_body">14sp</dimen>
+    <!-- Value text in list rows, details rows, TOC, sort options.
+         The app's de-facto "value" size since v1.0 (Phase 9 token). -->
+    <dimen name="text_size_body_medium">15sp</dimen>
     <dimen name="text_size_body_large">16sp</dimen>
     <dimen name="text_size_title">18sp</dimen>
+    <!-- Hero/greeting titles: home continue title, home greeting,
+         about screen title (Phase 9 token). -->
+    <dimen name="text_size_hero">20sp</dimen>
     <dimen name="text_size_title_large">22sp</dimen>
     <dimen name="text_size_headline">26sp</dimen>
+    <!-- Micro "% read" label on book cover thumbnails (Phase 9 token). -->
+    <dimen name="text_size_cover_label">10sp</dimen>
 </resources>
