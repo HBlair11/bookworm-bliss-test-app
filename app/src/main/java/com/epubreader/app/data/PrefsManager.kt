@@ -180,6 +180,33 @@ class PrefsManager(
             prefs.edit().putBoolean(KEY_TTS_BACKGROUND, value).apply()
         }
 
+    // ---- Phase 10: app theme + reading goal ----
+
+    /**
+     * Phase 10: the main app theme (Original or Pastel). This is SEPARATE from
+     * [theme] (the reader content theme) — changing it re-skins every app
+     * screen via [com.epubreader.app.util.AppThemeController].
+     */
+    var appTheme: String
+        get() = prefs.getString(KEY_APP_THEME, AppTheme.ORIGINAL) ?: AppTheme.ORIGINAL
+        set(value) {
+            prefs.edit().putString(KEY_APP_THEME, value).apply()
+        }
+
+    /** Reading goal in minutes per day (web app Settings → Reading Goal). */
+    var readingGoalMinutes: Int
+        get() = prefs.getInt(KEY_READING_GOAL, DEFAULT_READING_GOAL_MINUTES).coerceIn(MIN_READING_GOAL, MAX_READING_GOAL)
+        set(value) {
+            prefs.edit().putInt(KEY_READING_GOAL, value.coerceIn(MIN_READING_GOAL, MAX_READING_GOAL)).apply()
+        }
+
+    /** Whether the reading goal progress is surfaced on the stats screen. */
+    var showReadingGoalOnStats: Boolean
+        get() = prefs.getBoolean(KEY_SHOW_GOAL_ON_STATS, true)
+        set(value) {
+            prefs.edit().putBoolean(KEY_SHOW_GOAL_ON_STATS, value).apply()
+        }
+
     companion object {
         const val KEY_GRID = "view_grid"
         const val KEY_GRID_COLS = "grid_columns"
@@ -203,6 +230,14 @@ class PrefsManager(
         const val KEY_TTS_SPEED = "tts_speed"
         const val KEY_TTS_PITCH = "tts_pitch"
         const val KEY_TTS_BACKGROUND = "tts_background"
+        const val KEY_APP_THEME = "app_theme"
+        const val KEY_READING_GOAL = "reading_goal_minutes"
+        const val KEY_SHOW_GOAL_ON_STATS = "show_goal_on_stats"
+
+        // Phase 10 reading goal: 0..240 minutes, default 30.
+        const val MIN_READING_GOAL = 0
+        const val MAX_READING_GOAL = 240
+        const val DEFAULT_READING_GOAL_MINUTES = 30
 
         // Patch v37 slider scales: progress N maps to 0.5 + N * 0.05 engine
         // units. Speed 0..50 -> 0.5x..3.0x (default 8 = 0.9x); pitch 0..30 ->
@@ -261,6 +296,18 @@ class PrefsManager(
 
         /** Use the book's own embedded fonts (@font-face) — no font-family override. */
         const val PUBLISHER = "publisher"
+    }
+
+    /**
+     * Phase 10 app theme ids. Original = the existing mint/eggplant app theme
+     * (Theme.EpubReader); Pastel = the web-app-derived pink/plum theme
+     * (Theme.EpubReader.Pastel). Only these two are offered; Night, Sepia and
+     * High Contrast have been removed from the app theme catalog per the Phase
+     * 10 spec (reader themes in [Theme] are unaffected).
+     */
+    object AppTheme {
+        const val ORIGINAL = "original"
+        const val PASTEL = "pastel"
     }
 
     object Align {

@@ -43,4 +43,14 @@ interface BookmarkDao {
     /** Semantic selected-text lookup used for duplicate detection after reader reflow. */
     @Query("SELECT * FROM bookmarks WHERE book_id = :bookId AND spine_index = :spineIndex AND bookmark_type = 1 AND snippet = :snippet ORDER BY id DESC LIMIT 1")
     suspend fun findTextBySnippet(bookId: Long, spineIndex: Int, snippet: String): BookmarkEntity?
+
+    // ---- Phase 10: Full Backup & Restore ----
+    @Query("SELECT * FROM bookmarks")
+    suspend fun getAll(): List<BookmarkEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(bookmarks: List<BookmarkEntity>)
+
+    @Query("DELETE FROM bookmarks")
+    suspend fun deleteAll()
 }

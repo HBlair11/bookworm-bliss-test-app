@@ -74,7 +74,8 @@ class ReaderSettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityReaderSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        SystemBarController.apply(this)
+        // Reader settings sheet is always dark chrome, regardless of app theme.
+        SystemBarController.apply(this, forceDark = true)
 
         // Lift content clear of the navigation bar so the last toggle is never
         // flush with the phone nav buttons (mirrors the old sheet's inset logic).

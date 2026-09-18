@@ -5,21 +5,17 @@ import android.graphics.Color
 /**
  * App theme palette — the semantic color values for a specific theme.
  *
- * This is the runtime equivalent of the XML theme attributes. When the
- * user selects an app theme (Default, Dark, Sepia, Night, High Contrast,
- * Custom), the corresponding [AppThemePalette] provides the color values
- * that are applied to the semantic attributes.
+ * Phase 10: the app theme catalog now offers exactly two themes — **Original**
+ * (the existing mint/eggplant light theme) and **Pastel** (the web-app-derived
+ * pink/plum light theme). Night, Sepia and High Contrast have been removed
+ * from the app theme catalog per the Phase 10 spec.
  *
- * The XML themes in themes.xml handle the Default and Night (dark) variants
- * via Android's resource system. This registry handles:
- *  - Themes that can't be expressed in XML (Custom user colors)
- *  - Runtime theme switching without activity recreation (future)
- *  - The reader-specific theme system (already in ReaderThemes.kt)
- *
- * For now, this serves as the single source of truth for the app theme
- * catalog. When full runtime switching is implemented, the selected
- * palette's values will be applied via ContextThemeWrapper or activity
- * recreation.
+ * NOTE: this registry is the runtime color mirror of the XML themes in
+ * themes.xml. The XML themes are what actually skin the app at runtime
+ * (via [com.epubreader.app.util.AppThemeController]); this data class is kept
+ * as the single source of truth for the catalog and for any code that needs
+ * raw color ints (e.g. drawing covers, gradients). The reader-content theme
+ * system (ReaderThemes.kt) is separate and unaffected.
  *
  * @property id          Unique theme id (persisted in SharedPreferences).
  * @property displayName Human-readable name.
@@ -51,16 +47,28 @@ data class AppThemePalette(
     val isDark: Boolean,
 ) {
     companion object {
-        // ===== Brand palette (from colors.xml) =====
+        // ===== Original brand palette (from colors.xml) =====
         private val MINT = Color.parseColor("#E0F0EA")
         private val SLATE = Color.parseColor("#95ADBE")
         private val PURPLE = Color.parseColor("#574F7D")
         private val PLUM = Color.parseColor("#503A65")
         private val EGGPLANT = Color.parseColor("#3C2A4D")
 
-        /** Default (Light) — matches the XML Theme.Livre.App */
+        // ===== Pastel brand palette (from the test-epub web app) =====
+        private val PASTEL_ACCENT = Color.parseColor("#D88C9A")
+        private val PASTEL_ACCENT_DARK = Color.parseColor("#C6707E")
+        private val PASTEL_SECONDARY = Color.parseColor("#B48EAE")
+        private val PASTEL_BG = Color.parseColor("#FFEEF2")
+        private val PASTEL_SURFACE = Color.parseColor("#FFFFFF")
+        private val PASTEL_SURFACE_ALT = Color.parseColor("#FFE4F3")
+        private val PASTEL_BORDER = Color.parseColor("#F1E3D3")
+        private val PASTEL_TEXT = Color.parseColor("#5A4650")
+        private val PASTEL_TEXT_MUTED = Color.parseColor("#B48EAE")
+        private val PASTEL_TEXT_FAINT = Color.parseColor("#D88C9A")
+
+        /** Original (Light) — matches the XML Theme.Livre.App / Theme.EpubReader */
         val DEFAULT = AppThemePalette(
-            id = "default",
+            id = "original",
             displayName = "Original",
             primary = PLUM,
             primaryVariant = PURPLE,
@@ -75,66 +83,30 @@ data class AppThemePalette(
             isDark = false,
         )
 
-        /** Dark / Night — matches the XML night theme */
-        val NIGHT = AppThemePalette(
-            id = "night",
-            displayName = "Night",
-            primary = PLUM,
-            primaryVariant = PURPLE,
-            background = EGGPLANT,
-            surface = PLUM,
-            surfaceVariant = PURPLE,
-            textPrimary = MINT,
-            textSecondary = SLATE,
-            textTertiary = SLATE,
-            divider = PURPLE,
-            accent = MINT,
-            isDark = true,
-        )
-
-        /** Sepia — warm cream tones for the app shell */
-        val SEPIA = AppThemePalette(
-            id = "sepia",
-            displayName = "Sepia",
-            primary = PLUM,
-            primaryVariant = PURPLE,
-            background = Color.parseColor("#F1E3D3"),
-            surface = Color.parseColor("#F7EFE3"),
-            surfaceVariant = Color.parseColor("#EBD9C4"),
-            textPrimary = Color.parseColor("#5A4650"),
-            textSecondary = Color.parseColor("#7A6470"),
-            textTertiary = Color.parseColor("#9A8490"),
-            divider = Color.parseColor("#C4A88E"),
-            accent = MINT,
+        /** Pastel — matches the XML Theme.Livre.App.Pastel / Theme.EpubReader.Pastel */
+        val PASTEL = AppThemePalette(
+            id = "pastel",
+            displayName = "Pastel",
+            primary = PASTEL_ACCENT,
+            primaryVariant = PASTEL_ACCENT_DARK,
+            background = PASTEL_BG,
+            surface = PASTEL_SURFACE,
+            surfaceVariant = PASTEL_SURFACE_ALT,
+            textPrimary = PASTEL_TEXT,
+            textSecondary = PASTEL_TEXT_MUTED,
+            textTertiary = PASTEL_TEXT_FAINT,
+            divider = PASTEL_BORDER,
+            accent = PASTEL_ACCENT,
             isDark = false,
         )
 
-        /** High Contrast — maximum readability */
-        val HIGH_CONTRAST = AppThemePalette(
-            id = "high_contrast",
-            displayName = "High Contrast",
-            primary = Color.parseColor("#1A1A2E"),
-            primaryVariant = Color.parseColor("#000000"),
-            background = Color.WHITE,
-            surface = Color.WHITE,
-            surfaceVariant = Color.parseColor("#F0F0F0"),
-            textPrimary = Color.BLACK,
-            textSecondary = Color.parseColor("#333333"),
-            textTertiary = Color.parseColor("#666666"),
-            divider = Color.BLACK,
-            accent = Color.parseColor("#0066CC"),
-            isDark = false,
-        )
-
-        /** All available app themes, in display order */
+        /** All available app themes, in display order. */
         val ALL: List<AppThemePalette> = listOf(
             DEFAULT,
-            NIGHT,
-            SEPIA,
-            HIGH_CONTRAST,
+            PASTEL,
         )
 
-        /** Look up a theme by id. Falls back to DEFAULT. */
+        /** Look up a theme by id. Falls back to DEFAULT (Original). */
         fun byId(id: String?): AppThemePalette =
             ALL.firstOrNull { it.id == id } ?: DEFAULT
     }

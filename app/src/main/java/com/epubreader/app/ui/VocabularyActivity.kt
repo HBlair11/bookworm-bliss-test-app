@@ -35,6 +35,8 @@ class VocabularyActivity : AppCompatActivity() {
     private lateinit var adapter: VocabularyAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Phase 10: apply the selected app theme before inflating any views.
+        com.epubreader.app.util.AppThemeController.apply(this)
         super.onCreate(savedInstanceState)
         binding = ActivityVocabularyBinding.inflate(layoutInflater)
         setContentView(binding.root)

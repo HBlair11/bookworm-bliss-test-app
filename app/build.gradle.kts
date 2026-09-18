@@ -121,6 +121,9 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:compiler:4.16.0")
 
+    // Phase 10: Full Backup & Restore JSON serialization.
+    implementation("com.google.code.gson:gson:2.11.0")
+
     testImplementation("junit:junit:4.13.2")
     testImplementation("net.sf.kxml:kxml2:2.3.0")
     testImplementation("xmlpull:xmlpull:1.1.3.1")

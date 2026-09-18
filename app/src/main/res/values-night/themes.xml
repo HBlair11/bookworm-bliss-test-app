@@ -2,90 +2,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--
       ============================================================
-      NIGHT THEME — overrides semantic tokens for dark mode
+      NIGHT OVERRIDE — intentionally empty (Phase 10)
       ============================================================
-      The base Theme.Livre uses light-mode semantic colors.
-      This night overlay reassigns the same attribute names to
-      dark-mode palette colors. Layouts reference ?attr/livre* names
-      and automatically get the correct dark-mode values.
+      The app now offers only two LIGHT app themes (Original and
+      Pastel); the "Night" app theme has been removed. To stop the
+      system dark-mode setting from re-skinning the app, the base
+      Theme.Livre now extends Theme.MaterialComponents.Light (see
+      values/themes.xml) and this night qualifier file no longer
+      reassigns any colors. Leaving it empty guarantees the night
+      config resolves identically to the default (light) config.
 
-      The reader chrome stays dark in both modes (it's always
-      eggplant), so the reader themes don't need a night variant.
+      The reader chrome is unaffected: it is always dark via
+      Theme.Livre.Reader, which sets its own colors explicitly.
+      ============================================================
     -->
-    <style name="Theme.Livre" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- System bars stay black everywhere -->
-        <item name="android:statusBarColor">@color/black</item>
-        <item name="android:navigationBarColor">@color/black</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
-        <item name="android:windowTranslucentStatus">false</item>
-        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
-        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
-        <item name="android:fitsSystemWindows">true</item>
-
-        <!-- Material color slots — dark mode -->
-        <item name="colorPrimary">@color/palette_plum</item>
-        <item name="colorPrimaryVariant">@color/palette_purple</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/palette_slate</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <item name="android:colorBackground">@color/dark_bg</item>
-        <item name="colorSurface">@color/dark_surface</item>
-        <item name="colorOnSurface">@color/dark_text</item>
-
-        <!-- Semantic text color slots — dark mode -->
-        <item name="android:textColorPrimary">@color/dark_text</item>
-        <item name="android:textColorSecondary">@color/dark_text_muted</item>
-
-        <!-- Custom semantic color attributes — dark mode -->
-        <item name="livreColorTextPrimary">@color/dark_text</item>
-        <item name="livreColorTextSecondary">@color/dark_text_muted</item>
-        <item name="livreColorTextTertiary">@color/dark_text_faint</item>
-        <item name="livreColorSurfaceVariant">@color/dark_surface_alt</item>
-        <item name="livreColorDivider">@color/dark_border</item>
-        <item name="livreColorAccent">@color/palette_mint</item>
-        <item name="livreColorError">@color/palette_eggplant</item>
-        <item name="livreColorSuccess">@color/palette_mint</item>
-        <item name="livreColorDisabled">@color/palette_slate</item>
-
-        <!-- Reader content area stays the same (controlled by ReaderTheme.kt) -->
-        <item name="livreColorReaderBackground">@color/reader_bg_light</item>
-        <item name="livreColorReaderText">@color/reader_ink_light</item>
-        <item name="livreColorReaderLink">@color/palette_purple</item>
-        <item name="livreColorReaderSelection">@color/tts_word_highlight</item>
-
-        <!-- Reader chrome stays dark in both modes -->
-        <item name="livreColorReaderChromeBackground">@color/reader_chrome_bg</item>
-        <item name="livreColorReaderChromeSurface">@color/reader_chrome_surface</item>
-        <item name="livreColorReaderChromeText">@color/reader_chrome_text</item>
-        <item name="livreColorReaderChromeTextSecondary">@color/reader_chrome_text_muted</item>
-        <item name="livreColorReaderChromeAccent">@color/reader_chrome_accent</item>
-        <item name="livreColorReaderChromeScrim">@color/reader_chrome_scrim</item>
-
-        <!-- Dimension attributes (same in dark mode) -->
-        <item name="livreScreenPadding">@dimen/screen_padding_h</item>
-        <item name="livreCardPadding">@dimen/card_padding</item>
-        <item name="livreRowSpacing">@dimen/row_spacing</item>
-        <item name="livreCardSpacing">@dimen/card_spacing</item>
-        <item name="livreSectionSpacing">@dimen/section_spacing</item>
-
-        <!-- Shape attributes (same in dark mode) -->
-        <item name="livreShapeCard">@style/ShapeAppearance.Livre.Card</item>
-        <item name="livreShapeButton">@style/ShapeAppearance.Livre.Button</item>
-        <item name="livreShapeDialog">@style/ShapeAppearance.Livre.Dialog</item>
-        <item name="livreShapeChip">@style/ShapeAppearance.Livre.Chip</item>
-        <item name="livreShapeThumbnail">@style/ShapeAppearance.Livre.Thumbnail</item>
-
-        <item name="android:windowBackground">@color/dark_bg</item>
-    </style>
-
-    <!-- App theme alias for night mode -->
-    <style name="Theme.EpubReader" parent="Theme.Livre">
-        <item name="android:windowBackground">@color/dark_bg</item>
-        <item name="android:colorBackground">@color/dark_bg</item>
-        <item name="colorSurface">@color/dark_surface</item>
-        <item name="colorOnSurface">@color/dark_text</item>
-        <item name="android:textColorPrimary">@color/dark_text</item>
-        <item name="android:textColorSecondary">@color/dark_text_muted</item>
-    </style>
 </resources>

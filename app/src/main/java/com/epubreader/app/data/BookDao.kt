@@ -218,4 +218,11 @@ interface BookDao {
 
     @Query("SELECT * FROM books WHERE title LIKE '%' || :q || '%' OR author LIKE '%' || :q || '%' OR series LIKE '%' || :q || '%' ORDER BY sort_title COLLATE NOCASE")
     fun search(q: String): Flow<List<BookEntity>>
+
+    // ---- Phase 10: Full Backup & Restore ----
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(books: List<BookEntity>)
+
+    @Query("DELETE FROM books")
+    suspend fun deleteAll()
 }

@@ -18,6 +18,8 @@ import java.util.Calendar
 
 class ReadingStatsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Phase 10: apply the selected app theme before inflating any views.
+        com.epubreader.app.util.AppThemeController.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reading_stats)
         SystemBarController.apply(this)

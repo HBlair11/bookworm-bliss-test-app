@@ -8,8 +8,21 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [BookEntity::class, BookmarkEntity::class, HighlightEntity::class, CollectionEntity::class, BookCollectionRef::class, ReadingSessionEntity::class, DictionaryHistoryEntity::class, TtsSettingsEntity::class],
-    version = 16,
+    entities = [
+        BookEntity::class,
+        BookmarkEntity::class,
+        HighlightEntity::class,
+        CollectionEntity::class,
+        BookCollectionRef::class,
+        ReadingSessionEntity::class,
+        DictionaryHistoryEntity::class,
+        TtsSettingsEntity::class,
+        // Phase 10: Reading Nook stamps + journal, and search history.
+        ReadingStampEntity::class,
+        BookJournalEntryEntity::class,
+        SearchHistoryEntity::class,
+    ],
+    version = 17,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,6 +39,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dictionaryHistoryDao(): DictionaryHistoryDao
 
     abstract fun ttsSettingsDao(): TtsSettingsDao
+
+    // Phase 10
+    abstract fun readingStampDao(): ReadingStampDao
+
+    abstract fun bookJournalDao(): BookJournalDao
+
+    abstract fun searchHistoryDao(): SearchHistoryDao
 
     companion object {
         @Volatile
@@ -211,6 +231,59 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
+        /**
+         * Phase 10: Reading Nook data + search history. Adds three new tables
+         * — reading_stamps, book_journal_entries, search_history — without
+         * touching any existing table. Real migration only; existing records
+         * in every other table are preserved.
+         */
+        private val MIGRATION_16_17 =
+            object : Migration(16, 17) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    database.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS reading_stamps (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            book_id INTEGER NOT NULL,
+                            type TEXT NOT NULL,
+                            title TEXT NOT NULL,
+                            note TEXT,
+                            timestamp INTEGER NOT NULL,
+                            FOREIGN KEY(book_id) REFERENCES books(id) ON UPDATE NO ACTION ON DELETE CASCADE
+                        )
+                        """.trimIndent(),
+                    )
+                    database.execSQL("CREATE INDEX IF NOT EXISTS index_reading_stamps_book_id_timestamp ON reading_stamps(book_id, timestamp)")
+                    database.execSQL("CREATE INDEX IF NOT EXISTS index_reading_stamps_book_id_type ON reading_stamps(book_id, type)")
+
+                    database.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS book_journal_entries (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            book_id INTEGER NOT NULL,
+                            title TEXT NOT NULL,
+                            content TEXT NOT NULL,
+                            created_at INTEGER NOT NULL,
+                            updated_at INTEGER NOT NULL,
+                            FOREIGN KEY(book_id) REFERENCES books(id) ON UPDATE NO ACTION ON DELETE CASCADE
+                        )
+                        """.trimIndent(),
+                    )
+                    database.execSQL("CREATE INDEX IF NOT EXISTS index_book_journal_entries_book_id_created_at ON book_journal_entries(book_id, created_at)")
+
+                    database.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS search_history (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            query TEXT NOT NULL,
+                            searched_at INTEGER NOT NULL
+                        )
+                        """.trimIndent(),
+                    )
+                    database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_search_history_query ON search_history(query)")
+                }
+            }
+
         fun get(context: Context): AppDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room
@@ -218,7 +291,7 @@ abstract class AppDatabase : RoomDatabase() {
                         context.applicationContext,
                         AppDatabase::class.java,
                         "epub.db",
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
                     .build()
                     .also { INSTANCE = it }
             }

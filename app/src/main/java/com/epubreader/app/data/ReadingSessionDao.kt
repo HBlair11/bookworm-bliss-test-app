@@ -24,4 +24,14 @@ interface ReadingSessionDao {
 
     @Query("SELECT DISTINCT date(started_at / 1000, 'unixepoch', 'localtime') FROM reading_sessions WHERE active_seconds > 0 ORDER BY started_at DESC")
     suspend fun activeDays(): List<String>
+
+    // ---- Phase 10: Full Backup & Restore ----
+    @Query("SELECT * FROM reading_sessions")
+    suspend fun getAll(): List<ReadingSessionEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(sessions: List<ReadingSessionEntity>)
+
+    @Query("DELETE FROM reading_sessions")
+    suspend fun deleteAll()
 }

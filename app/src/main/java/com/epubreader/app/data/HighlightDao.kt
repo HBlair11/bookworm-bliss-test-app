@@ -23,4 +23,14 @@ interface HighlightDao {
 
     @Delete
     suspend fun delete(highlight: HighlightEntity)
+
+    // ---- Phase 10: Full Backup & Restore ----
+    @Query("SELECT * FROM highlights")
+    suspend fun getAll(): List<HighlightEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(highlights: List<HighlightEntity>)
+
+    @Query("DELETE FROM highlights")
+    suspend fun deleteAll()
 }

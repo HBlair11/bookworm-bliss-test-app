@@ -18,13 +18,17 @@
       All custom attributes use the `livre` prefix to avoid collisions
       with Material Components / AppCompat attrs.
 
-      To add a new app theme (Pastel, High Contrast, Custom), create
+      To add a new app theme, create
       a new theme that overrides the color attribute values. Layouts
       never need to change — they reference ?attr/livre* names.
     -->
 
-    <!-- ===== BASE THEME — assigns semantic attributes ===== -->
-    <style name="Theme.Livre" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <!-- ===== BASE THEME — assigns semantic attributes =====
+         Phase 10: parent switched from DayNight to Light so the app never
+         auto-switches to a dark (Night) theme based on the system setting.
+         Only the two light app themes (Original / Pastel) are offered now;
+         the reader keeps its own always-dark chrome via Theme.Livre.Reader. ===== -->
+    <style name="Theme.Livre" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- System bars -->
         <item name="android:statusBarColor">@color/black</item>
         <item name="android:navigationBarColor">@color/black</item>
@@ -191,6 +195,76 @@
     </style>
 
     <style name="Theme.EpubReader.Settings" parent="Theme.Livre.Reader.Settings">
+    </style>
+
+    <!--
+      ============================================================
+      PASTEL APP THEME (Phase 10)
+      ============================================================
+      Derived from the test-epub web app. This is a LIGHT theme
+      (pink background, plum text, rose accents) that overrides the
+      semantic livre* color tokens so every existing layout renders
+      in pastel without per-screen edits. It keeps the same shape/
+      dimension tokens as Original but the livreShapeCard corner is
+      rounded more (web app uses generous 16–20dp radii).
+
+      Reader chrome is intentionally NOT overridden here — the reader
+      keeps its static dark chrome regardless of app theme, exactly as
+      Original does. Only app screens (Home, Settings, Details, Search,
+      Reading Nook, Stats, Vocabulary) use this theme.
+      ============================================================
+    -->
+    <style name="Theme.Livre.App.Pastel" parent="Theme.Livre.App">
+        <!-- Material color slots -->
+        <item name="colorPrimary">@color/pastel_accent</item>
+        <item name="colorPrimaryVariant">@color/pastel_accent_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/pastel_secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:colorBackground">@color/pastel_light_bg</item>
+        <item name="colorSurface">@color/pastel_light_surface</item>
+        <item name="colorOnSurface">@color/pastel_light_text</item>
+
+        <!-- Semantic text -->
+        <item name="android:textColorPrimary">@color/pastel_light_text</item>
+        <item name="android:textColorSecondary">@color/pastel_light_text_muted</item>
+
+        <!-- Custom semantic livre* tokens -->
+        <item name="livreColorTextPrimary">@color/pastel_light_text</item>
+        <item name="livreColorTextSecondary">@color/pastel_light_text_muted</item>
+        <item name="livreColorTextTertiary">@color/pastel_light_text_faint</item>
+        <item name="livreColorSurfaceVariant">@color/pastel_light_surface_alt</item>
+        <item name="livreColorDivider">@color/pastel_light_border</item>
+        <item name="livreColorAccent">@color/pastel_accent</item>
+        <item name="livreColorError">@color/pastel_accent_dark</item>
+        <item name="livreColorSuccess">@color/pastel_pop2</item>
+        <item name="livreColorDisabled">@color/pastel_light_text_faint</item>
+
+        <!-- Reader content tokens: pastel-friendly defaults so any
+             reader-facing surface that reads ?livreColorReaderBackground
+             still looks coherent when themed via Pastel. -->
+        <item name="livreColorReaderBackground">@color/pastel_surface_alt2</item>
+        <item name="livreColorReaderText">@color/pastel_light_text</item>
+        <item name="livreColorReaderLink">@color/pastel_pop2</item>
+        <item name="livreColorReaderSelection">@color/pastel_pop</item>
+
+        <!-- Window + system bars: light status bar (dark icons) -->
+        <item name="android:windowBackground">@color/pastel_light_bg</item>
+        <item name="android:statusBarColor">@color/pastel_light_bg</item>
+        <item name="android:navigationBarColor">@color/pastel_light_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+    </style>
+
+    <!--
+      Backward-compatible alias: app activities reference
+      Theme.EpubReader from the manifest; AppThemeController swaps
+      the resolved style id at runtime so no manifest edits are
+      needed when switching Original <-> Pastel.
+    -->
+    <style name="Theme.EpubReader.Pastel" parent="Theme.Livre.App.Pastel">
     </style>
 
 </resources>

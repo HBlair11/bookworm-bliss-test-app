@@ -294,7 +294,8 @@ class ReaderActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityReaderBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        SystemBarController.apply(this)
+        // Reader chrome is always dark, regardless of the app theme.
+        SystemBarController.apply(this, forceDark = true)
         applyWindowTheme()
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->

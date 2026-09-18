@@ -88,4 +88,45 @@
     <!-- Patch v37: Read-aloud word highlight in the reader content area
          (slate at 50% alpha — readable on light, sepia and dark themes). -->
     <color name="tts_word_highlight">#8095ADBE</color>
+
+    <!--
+      ============================================================
+      PASTEL THEME PALETTE — derived from the test-epub web app
+      (Phase 10). These are the raw brand colors of the web app's
+      pastel theme; Theme.Livre.App.Pastel in themes.xml maps the
+      semantic livre* tokens onto them so existing layouts render in
+      pastel without any per-screen changes.
+      ============================================================
+      accent       #D88C9A  pink/rose  — primary/accent
+      accent-dark  #C6707E            — primary variant
+      secondary    #B48EAE  purple   — secondary text/muted
+      pop          #F2D0A9  peach     — highlight accent
+      pop2         #8E7DBE  purple   — alt accent
+      light-bg     #FFEEF2  pink     — app background
+      light-surface #FFFFFF          — surface
+      light-surface-alt #FFE4F3      — alt surface
+      light-border #F1E3D3  cream    — divider/border
+      light-text   #5A4650  plum     — body text
+      light-text-muted #B48EAE       — muted text
+      light-text-faint #D88C9A       — faint text
+      surface-alt2 #FAF7F5           — card-internal surface
+      ============================================================
+    -->
+    <color name="pastel_accent">#D88C9A</color>
+    <color name="pastel_accent_dark">#C6707E</color>
+    <color name="pastel_secondary">#B48EAE</color>
+    <color name="pastel_pop">#F2D0A9</color>
+    <color name="pastel_pop2">#8E7DBE</color>
+    <color name="pastel_light_bg">#FFEEF2</color>
+    <color name="pastel_light_surface">#FFFFFF</color>
+    <color name="pastel_light_surface_alt">#FFE4F3</color>
+    <color name="pastel_light_border">#F1E3D3</color>
+    <color name="pastel_light_text">#5A4650</color>
+    <color name="pastel_light_text_muted">#B48EAE</color>
+    <color name="pastel_light_text_faint">#D88C9A</color>
+    <color name="pastel_surface_alt2">#FAF7F5</color>
+
+    <!-- Pastel progress bar gradient endpoints (accent → pop2) -->
+    <color name="pastel_progress_from">#D88C9A</color>
+    <color name="pastel_progress_to">#8E7DBE</color>
 </resources>

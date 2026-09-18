@@ -38,4 +38,23 @@ interface CollectionDao {
 
     @Query("SELECT c.* FROM collections c INNER JOIN book_collection_ref r ON c.id = r.collection_id WHERE r.book_id = :bookId ORDER BY c.name COLLATE NOCASE")
     fun observeCollectionsForBook(bookId: Long): Flow<List<CollectionEntity>>
+
+    // ---- Phase 10: Full Backup & Restore ----
+    @Query("SELECT * FROM collections")
+    suspend fun getAll(): List<CollectionEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(collections: List<CollectionEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addAll(refs: List<BookCollectionRef>)
+
+    @Query("SELECT * FROM book_collection_ref")
+    suspend fun getAllRefs(): List<BookCollectionRef>
+
+    @Query("DELETE FROM collections")
+    suspend fun deleteAll()
+
+    @Query("DELETE FROM book_collection_ref")
+    suspend fun deleteAllRefs()
 }

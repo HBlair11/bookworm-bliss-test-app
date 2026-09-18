@@ -13,7 +13,7 @@
 
       The actual values are assigned per-theme in themes.xml.
       This is what enables runtime theme switching: each theme
-      (Default, Dark, Sepia, Night, High Contrast) assigns different
+      (Original, Pastel) assigns different
       values to the same attribute names.
 
       Usage in layouts:

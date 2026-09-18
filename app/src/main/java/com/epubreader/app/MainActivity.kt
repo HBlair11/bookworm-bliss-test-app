@@ -104,10 +104,34 @@ class MainActivity : AppCompatActivity() {
             ActivityResultContracts.OpenMultipleDocuments(),
         ) { uris -> folderController.importMultiple(uris) }
 
+    // Phase 10: Full Backup & Restore launchers. JSON/DAO work is delegated to
+    // BackupRestoreService; MainActivity only owns the ActivityResult wiring.
+    private val backupService by lazy {
+        com.epubreader.app.service.BackupRestoreService(applicationContext)
+    }
+    private var pendingImportMode: com.epubreader.app.service.BackupRestoreService.RestoreMode? = null
+    private val createBackupLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.CreateDocument(com.epubreader.app.service.BackupRestoreService.MIME_TYPE),
+        ) { uri ->
+            if (uri != null) exportBackupTo(uri)
+        }
+    private val openBackupLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.OpenDocument(),
+        ) { uri ->
+            val mode = pendingImportMode
+            pendingImportMode = null
+            if (uri != null && mode != null) importBackupFrom(uri, mode)
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = PrefsManager(applicationContext)
         importer = EpubImporter(applicationContext)
         keepScreenOnController = com.epubreader.app.util.KeepScreenOnController(this, prefs)
+        // Phase 10: apply the selected app theme (Original / Pastel) before any
+        // view is inflated so every ?attr/livre* token resolves correctly.
+        com.epubreader.app.util.AppThemeController.apply(this)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -173,6 +197,21 @@ class MainActivity : AppCompatActivity() {
                 rows = emptyStateRows,
                 prefs = prefs,
                 onScreenOnChanged = { keepScreenOnController.refresh() },
+                callbacks = object : SettingsScreenController.Callbacks {
+                    override fun onExportBackup() =
+                        createBackupLauncher.launch("bookworm-bliss-backup${com.epubreader.app.service.BackupRestoreService.FILE_SUFFIX}")
+                    override fun onImportBackupMerge() {
+                        pendingImportMode = com.epubreader.app.service.BackupRestoreService.RestoreMode.MERGE
+                        openBackupLauncher.launch(arrayOf(com.epubreader.app.service.BackupRestoreService.MIME_TYPE))
+                    }
+                    override fun onImportBackupReplace() {
+                        pendingImportMode = com.epubreader.app.service.BackupRestoreService.RestoreMode.REPLACE
+                        openBackupLauncher.launch(arrayOf(com.epubreader.app.service.BackupRestoreService.MIME_TYPE))
+                    }
+                    override fun onClearSearchHistory() = clearSearchHistory()
+                    override fun onReloadSampleBooks() = reloadSampleBooks()
+                    override fun onAppThemeChanged() = recreate()
+                },
             )
         )
         drawerAdapter = DrawerAdapter { item -> navigationController.selectDrawer(item) }
@@ -624,5 +663,82 @@ class MainActivity : AppCompatActivity() {
                 book.id
             )
         )
+    }
+
+    // ---------------------------------------------------------------- Phase 10: backup / restore / search history
+
+    private fun exportBackupTo(uri: android.net.Uri) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val json = try {
+                backupService.export()
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(binding.fabScan, R.string.settings_backup_export_failed, Snackbar.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+            try {
+                contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) } ?: throw java.io.IOException()
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(binding.fabScan, R.string.settings_backup_export_done, Snackbar.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(binding.fabScan, R.string.settings_backup_export_failed, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun importBackupFrom(uri: android.net.Uri, mode: com.epubreader.app.service.BackupRestoreService.RestoreMode) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val json = try {
+                contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
+                    ?: throw java.io.IOException()
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(binding.fabScan, R.string.settings_backup_import_failed, Snackbar.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+            try {
+                val summary = backupService.importBackup(json, mode)
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(
+                        binding.fabScan,
+                        getString(R.string.settings_backup_import_done, summary),
+                        Snackbar.LENGTH_LONG,
+                    ).show()
+                    // A restore may have changed the app theme or reader data;
+                    // recreate so the new theme applies immediately.
+                    recreate()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(binding.fabScan, R.string.settings_backup_import_failed, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun clearSearchHistory() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            BookRepository(applicationContext).clearSearchHistory()
+            withContext(Dispatchers.Main) {
+                Snackbar.make(binding.fabScan, R.string.settings_search_history_cleared, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /** No bundled sample books ship with the Android app, so "Reload sample
+     *  books" re-scans the user's selected library folder (the closest
+     *  functional equivalent) and surfaces a toast when no folder is set. */
+    private fun reloadSampleBooks() {
+        if (prefs.selectedFolderUri != null) {
+            folderController.rescanSelectedFolder()
+            Snackbar.make(binding.fabScan, R.string.settings_samples_reloaded, Snackbar.LENGTH_SHORT).show()
+        } else {
+            Snackbar.make(binding.fabScan, R.string.folder_none, Snackbar.LENGTH_SHORT).show()
+        }
     }
 }

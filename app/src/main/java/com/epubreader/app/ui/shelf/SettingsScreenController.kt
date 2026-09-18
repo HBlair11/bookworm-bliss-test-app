@@ -6,20 +6,60 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.epubreader.app.R
-import com.epubreader.app.AboutPrivacyActivity
 import com.epubreader.app.data.PrefsManager
 import com.epubreader.app.ui.ReaderTheme
+import com.epubreader.app.ui.ReaderSettingsActivity
 
 /**
- * SettingsScreenController — extracted from MainActivity (Phase 8).
+ * SettingsScreenController — extracted from MainActivity (Phase 8), rebuilt for
+ * Phase 10.
  *
- * Renders the Settings screen into the shared empty-state container. The rows
- * are built by the shared [EmptyStateRows] helper so Folders and Settings
- * never leave stale rows behind in each other's view.
+ * Renders the Settings screen into the shared empty-state container as
+ * programmatic rows (the proven Phase 8 pattern — no generated ViewBinding IDs
+ * to drift). The row builders live in [EmptyStateRows]; this controller owns
+ * the section structure translated from the web app's SettingsView:
+ *
+ *   App Theme            — Original / Pastel picker (runtime re-skin)
+ *   Reading Goal         — minutes/day stepper + show-on-stats toggle
+ *   Reader Theme         — current theme, opens the reader settings activity
+ *   Typography & Sizing   — opens the reader settings activity (font/size/spacing)
+ *   Phone Screen On       — existing keep-awake toggle
+ *   Full Backup & Restore — Export / Import (Merge) / Import (Replace)
+ *   Maintenance          — Clear Search History, Reload Sample Books
+ *   Privacy & Architecture — static guarantee + architecture note
+ *
+ * Per the Phase 10 spec, the old "Scanned Folder" and label-only "Reader Theme"
+ * rows and the About/Privacy child navigation are removed; About/Privacy is
+ * replaced by the inline Privacy & Architecture section.
+ *
+ * Heavy work (JSON, DAO) is NOT done here — [Callbacks] hands those to
+ * [com.epubreader.app.MainActivity], which owns the ActivityResult launchers
+ * and delegates the actual export/import to
+ * [com.epubreader.app.service.BackupRestoreService].
  */
 class SettingsScreenController(
     private val config: Config,
 ) {
+
+    interface Callbacks {
+        /** Export the full backup to a user-chosen document URI. */
+        fun onExportBackup()
+
+        /** Import a backup document, merging into existing data. */
+        fun onImportBackupMerge()
+
+        /** Import a backup document, replacing all existing data first. */
+        fun onImportBackupReplace()
+
+        /** Delete every row from the search_history table. */
+        fun onClearSearchHistory()
+
+        /** Re-import the bundled sample books. */
+        fun onReloadSampleBooks()
+
+        /** Called after the app theme changes so the activity can recreate(). */
+        fun onAppThemeChanged()
+    }
 
     data class Config(
         val recycler: RecyclerView,
@@ -32,11 +72,9 @@ class SettingsScreenController(
         /** Invoked after the Screen On toggle flips so the owning Activity
          * can refresh the shared KeepScreenOnController immediately. */
         val onScreenOnChanged: () -> Unit,
+        val callbacks: Callbacks,
     )
 
-    /** Shows the Settings screen. Screen starts at the TOP of the layout
-     * instead of vertically centered (Patch 11); the top toolbar already
-     * shows the view name, so no in-screen heading was kept. */
     fun show() {
         config.rows.clear()
         config.recycler.visibility = View.GONE
@@ -46,33 +84,71 @@ class SettingsScreenController(
         config.emptyText.visibility = View.GONE
         config.emptyHint.visibility = View.GONE
 
-        val context = config.emptyState.context
-        val folder = config.prefs.selectedFolderUri
-        config.rows.addSettingsRow(
-            context.getString(R.string.settings_scanned_folder),
-            if (folder != null) FolderImportController.displayName(folder)
-            else context.getString(R.string.folder_none)
-        )
-        config.rows.addSettingsRow(
-            context.getString(R.string.settings_reader_theme),
-            readerThemeLabel()
-        )
-        // Patch 11: app-level "Screen On" toggle — keeps the screen awake 10
-        // minutes longer than the system timeout while the app is foreground.
-        config.rows.addScreenOnToggle(config.prefs) { config.onScreenOnChanged() }
-        // About/Privacy sits below the Screen On toggle so the user
-        // encounters the privacy-forward about screen as the last item.
-        config.rows.addSettingsRow(
-            context.getString(R.string.settings_about),
-            context.getString(R.string.settings_about_detail)
-        ) {
-            context.startActivity(Intent(context, AboutPrivacyActivity::class.java))
-        }
-    }
+        val ctx = config.emptyState.context
+        val rows = config.rows
+        val prefs = config.prefs
+        val cb = config.callbacks
 
-    /** Patch 17 (Addition #1): theme display name comes from the single-source
-     * registry so the main-app settings row stays in sync with the reader
-     * dropdown automatically. */
-    private fun readerThemeLabel(): String =
-        config.emptyState.context.getString(ReaderTheme.byId(config.prefs.theme).displayNameRes)
+        // ---- App Theme ----
+        rows.addSectionHeader(ctx.getString(R.string.settings_section_app_theme))
+        rows.addThemePickerRow(
+            current = prefs.appTheme,
+            options = listOf(
+                PrefsManager.AppTheme.ORIGINAL to ctx.getString(R.string.theme_original),
+                PrefsManager.AppTheme.PASTEL to ctx.getString(R.string.theme_pastel),
+            ),
+        ) { selected ->
+            if (selected != prefs.appTheme) {
+                prefs.appTheme = selected
+                cb.onAppThemeChanged()
+            }
+        }
+
+        // ---- Reading Goal ----
+        rows.addSectionHeader(ctx.getString(R.string.settings_section_reading_goal))
+        rows.addStepperRow(
+            label = ctx.getString(R.string.settings_reading_goal),
+            summary = ctx.getString(R.string.settings_reading_goal_summary),
+            value = prefs.readingGoalMinutes,
+            onMinus = { prefs.readingGoalMinutes = (prefs.readingGoalMinutes - 5).coerceIn(0, 240) },
+            onPlus = { prefs.readingGoalMinutes = (prefs.readingGoalMinutes + 5).coerceIn(0, 240) },
+            valueText = { "${prefs.readingGoalMinutes} ${ctx.getString(R.string.settings_minutes_day)}" },
+        )
+        rows.addToggleRow(
+            label = ctx.getString(R.string.settings_show_goal_on_stats),
+            summary = ctx.getString(R.string.settings_show_goal_on_stats_summary),
+            checked = prefs.showReadingGoalOnStats,
+        ) { checked -> prefs.showReadingGoalOnStats = checked }
+
+        // ---- Reader Theme + Typography & Sizing (open the reader settings) ----
+        rows.addSectionHeader(ctx.getString(R.string.settings_section_reader))
+        rows.addSettingsRow(
+            ctx.getString(R.string.settings_reader_theme),
+            ctx.getString(ReaderTheme.byId(prefs.theme).displayNameRes),
+        ) { ctx.startActivity(Intent(ctx, ReaderSettingsActivity::class.java)) }
+        rows.addSettingsRow(
+            ctx.getString(R.string.settings_typography),
+            ctx.getString(R.string.settings_typography_summary),
+        ) { ctx.startActivity(Intent(ctx, ReaderSettingsActivity::class.java)) }
+
+        // ---- Phone Screen On (kept) ----
+        rows.addSectionHeader(ctx.getString(R.string.settings_section_screen))
+        rows.addScreenOnToggle(prefs) { config.onScreenOnChanged() }
+
+        // ---- Full Backup & Restore ----
+        rows.addSectionHeader(ctx.getString(R.string.settings_section_backup))
+        rows.addFullWidthButton(ctx.getString(R.string.settings_backup_export)) { cb.onExportBackup() }
+        rows.addFullWidthButton(ctx.getString(R.string.settings_backup_import_merge)) { cb.onImportBackupMerge() }
+        rows.addFullWidthButton(ctx.getString(R.string.settings_backup_import_replace)) { cb.onImportBackupReplace() }
+
+        // ---- Maintenance & Search History ----
+        rows.addSectionHeader(ctx.getString(R.string.settings_section_maintenance))
+        rows.addFullWidthButton(ctx.getString(R.string.settings_clear_search_history)) { cb.onClearSearchHistory() }
+        rows.addFullWidthButton(ctx.getString(R.string.settings_reload_samples)) { cb.onReloadSampleBooks() }
+
+        // ---- Privacy & Architecture ----
+        rows.addSectionHeader(ctx.getString(R.string.settings_section_privacy))
+        rows.addParagraph(ctx.getString(R.string.settings_privacy_body))
+        rows.addParagraph(ctx.getString(R.string.settings_architecture_body))
+    }
 }

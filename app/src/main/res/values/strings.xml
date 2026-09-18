@@ -51,6 +51,37 @@
     <string name="settings_keep_screen_on">Screen On</string>
     <string name="settings_keep_screen_on_summary">Keep the screen on for 10 minutes longer than your current system setting.</string>
 
+    <!-- Phase 10: Settings sections translated from the web app -->
+    <string name="theme_original">Original</string>
+    <string name="theme_pastel">Pastel</string>
+    <string name="settings_section_app_theme">App Theme</string>
+    <string name="settings_section_reading_goal">Reading Goal</string>
+    <string name="settings_reading_goal">Daily reading goal</string>
+    <string name="settings_reading_goal_summary">Minutes you aim to read each day.</string>
+    <string name="settings_minutes_day">min/day</string>
+    <string name="settings_show_goal_on_stats">Show goal on stats</string>
+    <string name="settings_show_goal_on_stats_summary">Surface your daily reading goal progress on the stats screen.</string>
+    <string name="settings_section_reader">Reader</string>
+    <string name="settings_typography">Typography &amp; Sizing</string>
+    <string name="settings_typography_summary">Font family, size, line spacing, alignment</string>
+    <string name="settings_section_screen">Phone Screen</string>
+    <string name="settings_section_backup">Full Backup &amp; Restore</string>
+    <string name="settings_backup_export">Export backup</string>
+    <string name="settings_backup_import_merge">Import (merge)</string>
+    <string name="settings_backup_import_replace">Import (replace all)</string>
+    <string name="settings_section_maintenance">Maintenance &amp; Search History</string>
+    <string name="settings_clear_search_history">Clear search history</string>
+    <string name="settings_reload_samples">Reload sample books</string>
+    <string name="settings_section_privacy">Privacy &amp; Architecture</string>
+    <string name="settings_privacy_body">Your library lives entirely on this device. Bookworm Bliss never uploads your books, highlights, reading sessions, or search history to any server. Backup files are written only to locations you choose.</string>
+    <string name="settings_architecture_body">The app is built on a Room database with a semantic design system: every screen reads its colors from theme tokens, so switching between Original and Pastel re-skins the whole app instantly without touching layouts. Reader chrome stays dark by design, independent of the app theme.</string>
+    <string name="settings_backup_export_done">Backup exported</string>
+    <string name="settings_backup_export_failed">Backup export failed</string>
+    <string name="settings_backup_import_done">Backup imported: %1$s</string>
+    <string name="settings_backup_import_failed">Backup import failed</string>
+    <string name="settings_search_history_cleared">Search history cleared</string>
+    <string name="settings_samples_reloaded">Sample books reloaded</string>
+
     <string name="search_books_hint">Search books…</string>
     <string name="search_in_book_hint">Search this book</string>
 
@@ -126,6 +157,7 @@
     <string name="option_favorite_add">Add to Favorites</string>
     <string name="option_favorite_remove">Remove from Favorites</string>
     <string name="search_hint_books">Search by title, author or series</string>
+    <string name="search_recent">Recent searches</string>
     <string name="search_results">Search results</string>
     <string name="empty_library_hint">Tap the folder button to scan for EPUB files</string>
     <string name="scan_complete">Imported %1$d book(s)</string>
