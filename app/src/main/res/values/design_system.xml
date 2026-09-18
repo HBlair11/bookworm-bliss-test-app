@@ -198,4 +198,9 @@
     <dimen name="text_size_headline">26sp</dimen>
     <!-- Micro "% read" label on book cover thumbnails (Phase 9 token). -->
     <dimen name="text_size_cover_label">10sp</dimen>
+
+    <!-- Top app bar height — used by every activity's MaterialToolbar to ensure
+         a deterministic toolbar height regardless of ?attr/actionBarSize resolution
+         in CoordinatorLayout contexts. -->
+    <dimen name="top_app_bar_height">56dp</dimen>
 </resources>

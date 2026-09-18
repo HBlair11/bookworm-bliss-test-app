@@ -7,97 +7,104 @@
     android:background="@color/black"
     android:fitsSystemWindows="true">
 
-    <!-- Main content -->
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <!-- Main content: FrameLayout so the FAB can overlay with layout_gravity -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?android:colorBackground">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:colorBackground"
-            app:elevation="0dp">
-
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:title="@string/app_name"
-                app:titleCentered="false"
-                app:titleTextColor="?android:textColorPrimary" />
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/refresh"
+        <!-- Vertical layout: toolbar on top, content fills the rest -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:orientation="vertical">
 
-            <FrameLayout
+            <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:background="?android:colorBackground"
+                app:elevation="0dp">
 
-                <include
-                    android:id="@+id/homeContent"
-                    layout="@layout/view_home"
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone" />
+                    android:layout_height="@dimen/top_app_bar_height"
+                    app:title="@string/app_name"
+                    app:titleCentered="false"
+                    app:titleTextColor="?android:textColorPrimary" />
+            </com.google.android.material.appbar.AppBarLayout>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler"
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/refresh"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clipToPadding="false"
-                    android:overScrollMode="never" />
+                    android:layout_height="match_parent">
 
-                <LinearLayout
-                    android:id="@+id/emptyState"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="@dimen/spacing_xxl"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:id="@+id/emptyIcon"
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
-                        android:src="@drawable/ic_library"
-                        android:alpha="0.35"
-                        android:contentDescription="@string/app_name" />
-
-                    <TextView
-                        android:id="@+id/emptyText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_lg"
-                        android:text="@string/empty_library"
-                        android:textSize="@dimen/text_size_title"
-                        android:textStyle="bold"
-                        android:textColor="?android:textColorPrimary" />
-
-                    <TextView
-                        android:id="@+id/emptyHint"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_xs"
-                        android:gravity="center"
-                        android:text="@string/empty_library_hint"
-                        android:textColor="?android:textColorSecondary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/emptyAction"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_md"
-                        android:text="@string/action_add"
+                    <include
+                        android:id="@+id/homeContent"
+                        layout="@layout/view_home"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:visibility="gone" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never" />
+
+                    <LinearLayout
+                        android:id="@+id/emptyState"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_xxl"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/emptyIcon"
+                            android:layout_width="96dp"
+                            android:layout_height="96dp"
+                            android:src="@drawable/ic_library"
+                            android:alpha="0.35"
+                            android:contentDescription="@string/app_name" />
+
+                        <TextView
+                            android:id="@+id/emptyText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_lg"
+                            android:text="@string/empty_library"
+                            android:textSize="@dimen/text_size_title"
+                            android:textStyle="bold"
+                            android:textColor="?android:textColorPrimary" />
+
+                        <TextView
+                            android:id="@+id/emptyHint"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/empty_library_hint"
+                            android:textColor="?android:textColorSecondary" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/emptyAction"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:text="@string/action_add"
+                            android:visibility="gone" />
                 </LinearLayout>
             </FrameLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabScan"
@@ -109,7 +116,7 @@
             app:backgroundTint="?attr/colorPrimary"
             app:srcCompat="@drawable/ic_folder"
             app:tint="?attr/colorOnPrimary" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </FrameLayout>
 
     <!-- Navigation drawer (3/5 width, set programmatically) -->
     <LinearLayout
