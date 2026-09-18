@@ -254,10 +254,12 @@ class MainActivity : AppCompatActivity() {
         drawerToggle.syncState()
         applyToolbarNavigationVisibilitySafeguard()
 
-        // Home must be initialized before applyView(), because applyView(Home)
-        // intentionally re-renders the Home controller once the shell is ready.
+        // Set up Home before observers are registered. The view observer below
+        // performs the first full applyView() once the Activity reaches STARTED;
+        // do not call applyView() synchronously from onCreate because several
+        // shelf controllers are lifecycle-driven and their adapters/content are
+        // not yet attached at this point.
         homeController.setup()
-        navigationController.applyView(viewModel.view.value ?: ShelfView.Home)
         binding.refresh.setOnRefreshListener { folderController.rescanSelectedFolder() }
         setupObservers()
         binding.fabScan.setOnClickListener { onFabClicked() }
