@@ -95,10 +95,11 @@ class ShelfStateStore {
 
     companion object {
         /** The parent list an Author/Series detail view returns to, or null
-         * when [view] is not a detail view. */
+         * when [view] is not a detail view. Phase 10: detail views opened
+         * from Home return to Home, not the Authors/Series list. */
         fun parentOf(view: ShelfView): ShelfView? = when (view) {
-            is ShelfView.AuthorDetail -> ShelfView.AuthorsList
-            is ShelfView.SeriesDetail -> ShelfView.SeriesList
+            is ShelfView.AuthorDetail -> if (view.fromHome) ShelfView.Home else ShelfView.AuthorsList
+            is ShelfView.SeriesDetail -> if (view.fromHome) ShelfView.Home else ShelfView.SeriesList
             else -> null
         }
 

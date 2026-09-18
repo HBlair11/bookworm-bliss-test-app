@@ -153,6 +153,40 @@
                             android:layout_marginTop="2dp"
                             android:textColor="?android:textColorSecondary"
                             android:textSize="@dimen/text_size_overline" />
+
+                        <ProgressBar
+                            android:id="@+id/homeContinueProgressBar"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="4dp"
+                            android:layout_marginTop="6dp"
+                            android:progressTint="?attr/colorPrimary"
+                            android:progressBackgroundTint="?attr/colorSurfaceVariant" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/homeContinueResume"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/home_resume_reading"
+                                android:textSize="@dimen/text_size_body_small" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/homeContinueDetails"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:text="@string/home_book_details"
+                                android:textSize="@dimen/text_size_body_small" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <ImageButton
@@ -204,16 +238,33 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginStart="@dimen/row_content_padding_h"
                 android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/row_content_padding_h"
-                android:text="@string/home_favorites"
-                android:textColor="?android:textColorPrimary"
-                android:textSize="@dimen/text_size_title"
-                android:textStyle="bold" />
+                android:layout_marginEnd="@dimen/row_content_padding_h">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/home_favorites"
+                    android:textColor="?android:textColorPrimary"
+                    android:textSize="@dimen/text_size_title"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/homeFavoritesViewAll"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_view_all"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="@dimen/text_size_overline" />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/homeFavorites"
@@ -228,208 +279,109 @@
                 android:paddingBottom="@dimen/spacing_sm" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/homeAuthorsSection"
+        <!-- Phase 10: Authors navigation card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/homeAuthorsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/row_content_padding_h"
-                android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/row_content_padding_h"
-                android:text="@string/home_top_authors"
-                android:textColor="?android:textColorPrimary"
-                android:textSize="@dimen/text_size_title"
-                android:textStyle="bold" />
+            android:layout_marginStart="@dimen/row_content_padding_h"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="@dimen/row_content_padding_h"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="1dp">
 
             <LinearLayout
-                android:id="@+id/homeAuthorGroup1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/homeAuthorTitle1"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/row_content_padding_h"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="@dimen/row_content_padding_h"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="@dimen/text_size_body_small"
-                    android:textStyle="bold" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/homeAuthorBooks1"
-                    android:layout_width="match_parent"
-                    android:layout_height="262dp"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never"
-                    android:paddingStart="@dimen/row_content_padding_h"
-                    android:paddingEnd="@dimen/row_content_padding_h"
-                    android:paddingTop="@dimen/spacing_sm"
-                    android:paddingBottom="@dimen/spacing_sm" />
-            </LinearLayout>
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/homeAuthorGroup2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/homeAuthorTitle2"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/home_browse_authors"
+                        android:textColor="?android:textColorPrimary"
+                        android:textSize="@dimen/text_size_title"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/homeAllAuthors"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/home_all_authors"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="@dimen/text_size_overline" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/homeAuthorsNavContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/row_content_padding_h"
-                    android:layout_marginTop="@dimen/spacing_sm"
-                    android:layout_marginEnd="@dimen/row_content_padding_h"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="@dimen/text_size_body_small"
-                    android:textStyle="bold" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/homeAuthorBooks2"
-                    android:layout_width="match_parent"
-                    android:layout_height="262dp"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never"
-                    android:paddingStart="@dimen/row_content_padding_h"
-                    android:paddingEnd="@dimen/row_content_padding_h"
-                    android:paddingTop="@dimen/spacing_sm"
-                    android:paddingBottom="@dimen/spacing_sm" />
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical" />
             </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:id="@+id/homeAuthorGroup3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/homeAuthorTitle3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/row_content_padding_h"
-                    android:layout_marginTop="@dimen/spacing_sm"
-                    android:layout_marginEnd="@dimen/row_content_padding_h"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="@dimen/text_size_body_small"
-                    android:textStyle="bold" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/homeAuthorBooks3"
-                    android:layout_width="match_parent"
-                    android:layout_height="262dp"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never"
-                    android:paddingStart="@dimen/row_content_padding_h"
-                    android:paddingEnd="@dimen/row_content_padding_h"
-                    android:paddingTop="@dimen/spacing_sm"
-                    android:paddingBottom="@dimen/spacing_sm" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/homeSeriesSection"
+        <!-- Phase 10: Series navigation card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/homeSeriesCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/row_content_padding_h"
-                android:layout_marginTop="@dimen/spacing_xl"
-                android:layout_marginEnd="@dimen/row_content_padding_h"
-                android:text="@string/home_top_series"
-                android:textColor="?android:textColorPrimary"
-                android:textSize="@dimen/text_size_title"
-                android:textStyle="bold" />
+            android:layout_marginStart="@dimen/row_content_padding_h"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="@dimen/row_content_padding_h"
+            android:layout_marginBottom="@dimen/spacing_xl"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="1dp">
 
             <LinearLayout
-                android:id="@+id/homeSeriesGroup1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/homeSeriesTitle1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/row_content_padding_h"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="@dimen/row_content_padding_h"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="@dimen/text_size_body_small"
-                    android:textStyle="bold" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/homeSeriesBooks1"
-                    android:layout_width="match_parent"
-                    android:layout_height="262dp"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never"
-                    android:paddingStart="@dimen/row_content_padding_h"
-                    android:paddingEnd="@dimen/row_content_padding_h"
-                    android:paddingTop="@dimen/spacing_sm"
-                    android:paddingBottom="@dimen/spacing_sm" />
-            </LinearLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-            <LinearLayout
-                android:id="@+id/homeSeriesGroup2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/homeSeriesTitle2"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/row_content_padding_h"
-                    android:layout_marginTop="@dimen/spacing_sm"
-                    android:layout_marginEnd="@dimen/row_content_padding_h"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="@dimen/text_size_body_small"
-                    android:textStyle="bold" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/homeSeriesBooks2"
-                    android:layout_width="match_parent"
-                    android:layout_height="262dp"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never"
-                    android:paddingStart="@dimen/row_content_padding_h"
-                    android:paddingEnd="@dimen/row_content_padding_h"
-                    android:paddingTop="@dimen/spacing_sm"
-                    android:paddingBottom="@dimen/spacing_sm" />
-            </LinearLayout>
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/homeSeriesGroup3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/homeSeriesTitle3"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/home_browse_series"
+                        android:textColor="?android:textColorPrimary"
+                        android:textSize="@dimen/text_size_title"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/homeAllSeries"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/home_all_series"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="@dimen/text_size_overline" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/homeSeriesNavContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/row_content_padding_h"
-                    android:layout_marginTop="@dimen/spacing_sm"
-                    android:layout_marginEnd="@dimen/row_content_padding_h"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="@dimen/text_size_body_small"
-                    android:textStyle="bold" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/homeSeriesBooks3"
-                    android:layout_width="match_parent"
-                    android:layout_height="262dp"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never"
-                    android:paddingStart="@dimen/row_content_padding_h"
-                    android:paddingEnd="@dimen/row_content_padding_h"
-                    android:paddingTop="@dimen/spacing_sm"
-                    android:paddingBottom="@dimen/spacing_sm" />
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical" />
             </LinearLayout>
-        </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

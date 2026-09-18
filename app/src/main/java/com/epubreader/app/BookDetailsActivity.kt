@@ -116,13 +116,8 @@ class BookDetailsActivity : AppCompatActivity() {
         // BOOK
         // =========================
 
-        binding.bookValue.text = book.title
-
-        // =========================
-        // AUTHOR
-        // =========================
-
-        binding.authorValue.text =
+        // Phase 10: metadata author value (hero shows author in accent color)
+        binding.bookValue.text =
             book.author.ifBlank {
                 getString(R.string.unknown_author)
             }
@@ -230,9 +225,33 @@ class BookDetailsActivity : AppCompatActivity() {
         }
 
         // =========================
-        // READ
+        // PROGRESS SECTION (Phase 10)
         // =========================
 
+        if (book.progress > 0f || book.isCurrentlyReading) {
+            binding.progressSection.visibility = View.VISIBLE
+            val pct = (book.progress * 100).toInt()
+            binding.progressPercent.text = "$pct%"
+            binding.progressBar.progress = pct
+            if (!book.currentLocation.isNullOrBlank()) {
+                binding.currentSection.text = book.currentLocation
+                binding.currentSection.visibility = View.VISIBLE
+            } else {
+                binding.currentSection.visibility = View.GONE
+            }
+        } else {
+            binding.progressSection.visibility = View.GONE
+        }
+
+        // =========================
+        // READ (Resume/Start)
+        // =========================
+
+        if (book.progress > 0f || book.isCurrentlyReading) {
+            binding.btnRead.text = getString(R.string.option_continue_reading)
+        } else {
+            binding.btnRead.text = getString(R.string.option_start_reading)
+        }
         binding.btnRead.setOnClickListener {
             shouldRefreshOnResume = true
 
@@ -251,12 +270,23 @@ class BookDetailsActivity : AppCompatActivity() {
         }
 
         // =========================
-        // FAVORITE
+        // READING NOOK (Phase 10)
+        // =========================
+
+        binding.btnReadingNook.setOnClickListener {
+            startActivity(
+                Intent(this, ReadingNookActivity::class.java)
+                    .putExtra(ReadingNookActivity.EXTRA_BOOK_ID, book.id)
+            )
+        }
+
+        // =========================
+        // FAVORITE (MaterialButton)
         // =========================
 
         var favoriteState = book.isFavorite
 
-        binding.btnFavorite.setImageResource(
+        binding.btnFavorite.setIconResource(
             if (favoriteState) {
                 R.drawable.ic_favorite
             } else {
@@ -268,7 +298,7 @@ class BookDetailsActivity : AppCompatActivity() {
             favoriteState = !favoriteState
             val newFavoriteState = favoriteState
 
-            binding.btnFavorite.setImageResource(
+            binding.btnFavorite.setIconResource(
                 if (newFavoriteState) {
                     R.drawable.ic_favorite
                 } else {
@@ -286,21 +316,45 @@ class BookDetailsActivity : AppCompatActivity() {
         }
 
         // =========================
-        // REMOVE FROM READING
+        // ADD/DROP READING (Phase 10)
+        // =========================
+
+        binding.btnRemoveReading.setIconResource(R.drawable.ic_bookmark_border)
+        if (book.isCurrentlyReading) {
+            binding.btnRemoveReading.text = getString(R.string.option_drop_reading)
+        } else {
+            binding.btnRemoveReading.text = getString(R.string.option_add_reading)
+        }
+        binding.btnRemoveReading.setOnClickListener {
+            if (book.isCurrentlyReading) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase
+                        .get(applicationContext)
+                        .bookDao()
+                        .clearCurrentlyReading(book.id)
+                    withContext(Dispatchers.Main) {
+                        binding.btnRemoveReading.text = getString(R.string.option_add_reading)
+                    }
+                }
+                CurrentlyReadingUndoSnackbar.show(this@BookDetailsActivity, binding.root, book.id)
+            } else {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase
+                        .get(applicationContext)
+                        .bookDao()
+                        .setCurrentlyReading(book.id)
+                    withContext(Dispatchers.Main) {
+                        binding.btnRemoveReading.text = getString(R.string.option_drop_reading)
+                    }
+                }
+            }
+        }
+
+        // =========================
+        // EDIT METADATA
         // =========================
 
         binding.btnEditDetails.setOnClickListener { showEditDialog(book) }
-
-        binding.btnRemoveReading.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                AppDatabase
-                    .get(applicationContext)
-                    .bookDao()
-                    .clearCurrentlyReading(book.id)
-            }
-            CurrentlyReadingUndoSnackbar.show(this@BookDetailsActivity, binding.root, book.id)
-        }
-
 
         // =========================
         // REMOVE FROM LIBRARY

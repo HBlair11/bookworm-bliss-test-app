@@ -144,6 +144,12 @@ class MainActivity : AppCompatActivity() {
             object : HomeScreenController.Callbacks {
                 override fun onOpenBook(book: BookEntity) = this@MainActivity.openBook(book)
                 override fun onBookLongPressed(book: BookEntity) = this@MainActivity.showBookOptions(book)
+                override fun onOpenDetails(book: BookEntity) = this@MainActivity.openDetails(book)
+                override fun onOpenAuthor(name: String) = this@MainActivity.openAuthorFromHome(name)
+                override fun onOpenSeries(name: String) = this@MainActivity.openSeriesFromHome(name)
+                override fun onViewAllAuthors() = this@MainActivity.viewAllAuthors()
+                override fun onViewAllSeries() = this@MainActivity.viewAllSeries()
+                override fun onViewAllFavorites() = this@MainActivity.viewAllFavorites()
             },
         )
         libraryController = LibraryScreenController(
@@ -663,6 +669,66 @@ class MainActivity : AppCompatActivity() {
                 book.id
             )
         )
+    }
+
+    // ---------------------------------------------------------------- Phase 10: Home navigation
+
+    /** Opens an author's bookshelf from Home with fromHome=true so back returns
+     *  to Home, not the Authors list. Also captures Home scroll for restore. */
+    private fun openAuthorFromHome(name: String) {
+        scrollState.capture(
+            ShelfView.Home,
+            com.epubreader.app.ui.shelf.ScrollAnchor(
+                firstVisiblePosition = 0,
+                firstVisibleOffset = 0,
+                clickedBookId = null,
+                clickedBookPosition = -1,
+                clickedBookTopOffset = 0,
+            )
+        )
+        viewModel.openAuthorFromHome(name)
+        shelfState.scrollToTopOnNextContent = true
+    }
+
+    /** Opens a series' bookshelf from Home with fromHome=true so back returns
+     *  to Home, not the Series list. */
+    private fun openSeriesFromHome(name: String) {
+        scrollState.capture(
+            ShelfView.Home,
+            com.epubreader.app.ui.shelf.ScrollAnchor(
+                firstVisiblePosition = 0,
+                firstVisibleOffset = 0,
+                clickedBookId = null,
+                clickedBookPosition = -1,
+                clickedBookTopOffset = 0,
+            )
+        )
+        viewModel.openSeriesFromHome(name)
+        shelfState.scrollToTopOnNextContent = true
+    }
+
+    /** Navigate to the full Authors list from Home, scrolling to top. */
+    private fun viewAllAuthors() {
+        shelfState.scrollToTopOnNextContent = true
+        scrollState.clearPendingRestore()
+        shelfState.onDrawerNavigation()
+        viewModel.setView(ShelfView.AuthorsList)
+    }
+
+    /** Navigate to the full Series list from Home, scrolling to top. */
+    private fun viewAllSeries() {
+        shelfState.scrollToTopOnNextContent = true
+        scrollState.clearPendingRestore()
+        shelfState.onDrawerNavigation()
+        viewModel.setView(ShelfView.SeriesList)
+    }
+
+    /** Navigate to the full Favorites shelf from Home. */
+    private fun viewAllFavorites() {
+        shelfState.scrollToTopOnNextContent = true
+        scrollState.clearPendingRestore()
+        shelfState.onDrawerNavigation()
+        viewModel.setView(ShelfView.Favorites)
     }
 
     // ---------------------------------------------------------------- Phase 10: backup / restore / search history

@@ -153,12 +153,15 @@ class AppNavigationController(
     // ---------------------------------------------------------------- transitions
 
     /** Returns from an Author/Series detail (books layout) back to its parent
-     *  list (Authors or Series). Patch 11: the parent list's last scroll
-     *  position is restored — NOT top-reset — so the author/series row the
-     *  user originally tapped is still on screen. The toolbar icon flips back
-     *  to the hamburger menu (handled by applyView). */
+     *  list (Authors or Series), or back to Home when the detail was opened
+     *  from Home (Phase 10). Patch 11: the parent list's last scroll position
+     *  is restored — NOT top-reset — so the author/series row the user
+     *  originally tapped is still on screen. Phase 10: when returning to Home
+     *  from a fromHome detail, Home's scroll position is restored so the user
+     *  lands where they left off. */
     fun returnToParentList() {
-        val parent = ShelfStateStore.parentOf(viewModel.view.value ?: return) ?: return
+        val current = viewModel.view.value ?: return
+        val parent = ShelfStateStore.parentOf(current) ?: return
         scrollState.queueRestore(parent)
         viewModel.clearDetail()
     }

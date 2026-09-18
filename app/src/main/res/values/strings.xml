@@ -7,12 +7,33 @@
     <string name="home_continue_heading">Continue Reading</string>
     <string name="home_continue_series">%1$s</string>
     <string name="home_continue_location">Location - %1$s</string>
+    <string name="home_continue_section">Current section: "%1$s"</string>
     <string name="home_recently_added">Recent</string>
     <string name="home_favorites">Favorites</string>
     <string name="home_top_authors">Top Authors</string>
     <string name="home_top_series">Top Series</string>
     <string name="home_group_title">%1$s · %2$d books</string>
     <string name="home_progress_percent">%1$d%% read</string>
+    <string name="home_resume_reading">Resume Reading</string>
+    <string name="home_book_details">Book Details</string>
+    <string name="home_view_all">View All</string>
+    <!-- Book Details (Phase 10) -->
+    <string name="book_details_title">Book Details</string>
+    <string name="details_open_nook">Open Reading Nook</string>
+    <string name="details_reading_progress">Reading Progress</string>
+    <string name="book_synopsis">Synopsis</string>
+    <string name="option_add_reading">Add to Reading</string>
+    <string name="option_drop_reading">Drop from Reading</string>
+    <string name="option_continue_reading">Continue Reading</string>
+    <string name="option_start_reading">Start Reading</string>
+    <string name="home_all_authors">All Authors</string>
+    <string name="home_all_series">All Series</string>
+    <string name="home_browse_authors">Browse by Author</string>
+    <string name="home_browse_series">Browse by Series</string>
+    <string name="home_book_count">%1$d books</string>
+    <string name="home_vol_count">%1$d vols</string>
+    <string name="home_book_count_single">1 book</string>
+    <string name="home_vol_count_single">1 vol</string>
     <string name="home_empty_title">Your library is empty</string>
     <string name="home_empty_hint">Add a few EPUBs and Home will become your reading starting point.</string>
     <string name="action_scan_folder">Scan folder</string>
@@ -167,6 +188,43 @@
     <string name="empty_series">No series found.</string>
 
     <string name="progress_completed">Completed</string>
+
+    <!-- Phase 10: Reading Nook -->
+    <string name="reading_nook_title">Reading Nook</string>
+    <string name="nook_status">Status</string>
+    <string name="nook_status_unread">Unread</string>
+    <string name="nook_status_reading">Reading</string>
+    <string name="nook_status_finished">Finished</string>
+    <string name="nook_progress">Reading Progress</string>
+    <string name="nook_tab_overview">Overview</string>
+    <string name="nook_tab_journal">Journal</string>
+    <string name="nook_tab_stamps">Stamps</string>
+    <string name="nook_tab_highlights">Highlights</string>
+    <string name="nook_stamps_count">%1$d stamps</string>
+    <string name="nook_journals_count">%1$d entries</string>
+    <string name="nook_highlights_count">%1$d highlights</string>
+    <string name="nook_no_stamps">No reading stamps yet. Add one below.</string>
+    <string name="nook_no_journals">No journal entries yet. Add one below.</string>
+    <string name="nook_no_highlights">No highlights yet for this book.</string>
+    <string name="nook_add_stamp">Add Stamp</string>
+    <string name="nook_add_journal">Add Entry</string>
+    <string name="nook_stamp_type">Stamp type</string>
+    <string name="nook_stamp_note">Note (optional)</string>
+    <string name="nook_journal_title">Title</string>
+    <string name="nook_journal_content">Content</string>
+    <string name="nook_journal_default_title">Reflection Entry</string>
+    <string name="nook_save">Save</string>
+    <string name="nook_cancel">Cancel</string>
+    <string name="nook_delete">Delete</string>
+    <string name="nook_edit">Edit</string>
+    <string name="nook_status_set">Status updated</string>
+    <string name="stamp_started">Started Reading</string>
+    <string name="stamp_resumed">Resumed</string>
+    <string name="stamp_finished">Finished Reading</string>
+    <string name="stamp_revisited">Revisited</string>
+    <string name="stamp_favorite_moment">Favorite Moment</string>
+    <string name="stamp_memorable">Memorable Passage</string>
+    <string name="stamp_reread">Reread in Progress</string>
     <string name="progress_books">books</string>
     <string name="progress_book">book</string>
 

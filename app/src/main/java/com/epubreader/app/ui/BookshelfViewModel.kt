@@ -42,8 +42,8 @@ sealed class ShelfView {
     // the scan-complete snackbar and exited via the back button / toolbar back
     // arrow, which restores the view the user was on before the scan.
     data class RecentlyAdded(val ids: List<Long>) : ShelfView()
-    data class AuthorDetail(val name: String) : ShelfView()
-    data class SeriesDetail(val name: String) : ShelfView()
+    data class AuthorDetail(val name: String, val fromHome: Boolean = false) : ShelfView()
+    data class SeriesDetail(val name: String, val fromHome: Boolean = false) : ShelfView()
 }
 
 class BookshelfViewModel(
@@ -185,13 +185,30 @@ class BookshelfViewModel(
         _refresh.value = Unit
     }
 
-    fun openDetail(name: String) {
+    fun openDetail(name: String, fromHome: Boolean = false) {
         val v = _view.value
         val detail = when (v) {
-            is ShelfView.AuthorsList -> ShelfView.AuthorDetail(name)
-            is ShelfView.SeriesList -> ShelfView.SeriesDetail(name)
+            is ShelfView.AuthorsList -> ShelfView.AuthorDetail(name, fromHome)
+            is ShelfView.SeriesList -> ShelfView.SeriesDetail(name, fromHome)
+            is ShelfView.Home -> ShelfView.AuthorDetail(name, fromHome = true)
             else -> v ?: initialView()
         }
+        applySortFor(detail)
+        _view.value = detail
+    }
+
+    /** Phase 10: Open an author detail from Home with fromHome=true so back
+     *  returns to Home, not the Authors list. */
+    fun openAuthorFromHome(name: String) {
+        val detail = ShelfView.AuthorDetail(name, fromHome = true)
+        applySortFor(detail)
+        _view.value = detail
+    }
+
+    /** Phase 10: Open a series detail from Home with fromHome=true so back
+     *  returns to Home, not the Series list. */
+    fun openSeriesFromHome(name: String) {
+        val detail = ShelfView.SeriesDetail(name, fromHome = true)
         applySortFor(detail)
         _view.value = detail
     }
@@ -200,8 +217,8 @@ class BookshelfViewModel(
     fun clearDetail() {
         val v = _view.value
         val parent = when (v) {
-            is ShelfView.AuthorDetail -> ShelfView.AuthorsList
-            is ShelfView.SeriesDetail -> ShelfView.SeriesList
+            is ShelfView.AuthorDetail -> if (v.fromHome) ShelfView.Home else ShelfView.AuthorsList
+            is ShelfView.SeriesDetail -> if (v.fromHome) ShelfView.Home else ShelfView.SeriesList
             else -> v ?: initialView()
         }
         applySortFor(parent)

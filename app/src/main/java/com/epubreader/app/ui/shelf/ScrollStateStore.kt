@@ -118,10 +118,13 @@ class ScrollStateStore {
         }
 
         /** Views whose scroll position is restored on return from a
-         * sub-activity. Currently Reading is included for the Book Details
-         * return path (the reader return path top-resets instead). */
+         * sub-activity or sub-view. Currently Reading is included for the Book
+         * Details return path (the reader return path top-resets instead).
+         * Phase 10: Home is included so its scroll position is restored when
+         * returning from an Author/Series detail opened from Home. */
         fun isRestoreEligible(view: ShelfView): Boolean =
-            view is ShelfView.Reading ||
+            view is ShelfView.Home ||
+                    view is ShelfView.Reading ||
                     view is ShelfView.Library ||
                     view is ShelfView.AuthorsList ||
                     view is ShelfView.SeriesList ||
