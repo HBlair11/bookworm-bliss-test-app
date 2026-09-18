@@ -171,7 +171,6 @@ class EpubImporter(
     }
 
     private val db = AppDatabase.get(context)
-    private val parser = EpubParser()
 
     private val epubDir = File(context.filesDir, "epubs").apply { mkdirs() }
     private val coverDir = File(context.filesDir, "covers").apply { mkdirs() }
@@ -339,7 +338,7 @@ class EpubImporter(
                 }
 
                 val sourceChecksum = checksum(tempFile)
-                val parsed = try { parser.parse(tempFile) } catch (_: Exception) { null }
+                val parsed = com.epubreader.app.core.epub.EpubParseBridge.parse(tempFile)
                 if (parsed == null) {
                     results += MetadataRefreshItem(
                         MetadataRefreshStatus.FAILED, null, source.name, "",
@@ -480,11 +479,8 @@ class EpubImporter(
         working = target
 
         val parsed =
-            try {
-                parser.parse(working)
-            } catch (e: Exception) {
-                return ImportResult(null, false)
-            }
+            com.epubreader.app.core.epub.EpubParseBridge.parse(working)
+                ?: return ImportResult(null, false)
 
         val coverFile = File(coverDir, "$checksum.png")
         if (!coverFile.exists()) {
@@ -598,11 +594,8 @@ class EpubImporter(
         }
         working = target
         val parsed =
-            try {
-                parser.parse(working)
-            } catch (e: Exception) {
-                return null
-            } ?: return null
+            com.epubreader.app.core.epub.EpubParseBridge.parse(working)
+                ?: return null
         val coverFile = File(coverDir, "$checksum.png")
         if (!coverFile.exists()) {
             val extracted = CoverExtractor.extract(working, parsed, coverFile)

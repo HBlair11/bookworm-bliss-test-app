@@ -1,7 +1,10 @@
 package com.epubreader.app.ui.shelf
 
+import android.content.Context
 import android.content.Intent
+import android.util.TypedValue
 import android.view.View
+import androidx.annotation.AttrRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -197,42 +200,36 @@ class AppNavigationController(
         val isRecentlyAdded = ShelfStateStore.isRecentlyAdded(view)
         drawerToggle.isDrawerIndicatorEnabled = !isDetail && !isRecentlyAdded
         if (isDetail || isRecentlyAdded) {
-            // Patch 12: when the drawer indicator is disabled,
-            // ActionBarDrawerToggle draws NO icon on its own — so the back
-            // arrow was invisible on author/series detail. Explicitly set the
-            // up-indicator drawable so the back arrow renders and is
-            // tappable.
             drawerToggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back)
             drawerToggle.setToolbarNavigationClickListener {
                 if (isRecentlyAdded) exitRecentlyAdded() else returnToParentList()
             }
-            // Visibility safeguard: explicitly set the navigation icon and tint
-            // on the MaterialToolbar, since ActionBarDrawerToggle's delegate
-            // doesn't always render on MaterialToolbar.
+        } else {
+            drawerToggle.setHomeAsUpIndicator(0)
+            drawerToggle.setToolbarNavigationClickListener { binding.drawerRoot.open() }
+        }
+        drawerToggle.syncState()
+        // AFTER syncState: explicitly set the navigation icon and tint on the
+        // MaterialToolbar. ActionBarDrawerToggle's delegate doesn't always
+        // render reliably on MaterialToolbar, so this is the visibility safeguard.
+        val ctx = config.activity
+        // Resolve the navigation icon tint from the current theme attribute so
+        // it automatically adapts to day (eggplant) vs night (mint) text color,
+        // and respects Pastel's custom text color override.
+        val navIconTint = ctx.resolveThemeColor(R.attr.livreColorTextPrimary)
+        if (isDetail || isRecentlyAdded) {
             binding.toolbar.navigationIcon =
-                androidx.core.content.ContextCompat.getDrawable(config.activity, R.drawable.ic_arrow_back)
-            binding.toolbar.setNavigationIconTint(
-                androidx.core.content.ContextCompat.getColor(config.activity, R.color.colorTextPrimary)
-            )
+                androidx.core.content.ContextCompat.getDrawable(ctx, R.drawable.ic_arrow_back)
+            binding.toolbar.setNavigationIconTint(navIconTint)
             binding.toolbar.setNavigationOnClickListener {
                 if (isRecentlyAdded) exitRecentlyAdded() else returnToParentList()
             }
         } else {
-            // Re-enable the hamburger. Passing 0 clears any previously-set
-            // up-indicator so the toggle's own drawer indicator takes over
-            // again.
-            drawerToggle.setHomeAsUpIndicator(0)
-            drawerToggle.setToolbarNavigationClickListener { binding.drawerRoot.open() }
-            // Visibility safeguard: explicitly set the hamburger icon and tint
-            // on the MaterialToolbar.
             binding.toolbar.navigationIcon =
-                androidx.core.content.ContextCompat.getDrawable(config.activity, R.drawable.ic_menu)
-            binding.toolbar.setNavigationIconTint(
-                androidx.core.content.ContextCompat.getColor(config.activity, R.color.colorTextPrimary)
-            )
+                androidx.core.content.ContextCompat.getDrawable(ctx, R.drawable.ic_menu)
+            binding.toolbar.setNavigationIconTint(navIconTint)
             binding.toolbar.setNavigationOnClickListener { binding.drawerRoot.open() }
         }
-        drawerToggle.syncState()
         binding.toolbar.title = titleFor(view)
         config.drawerAdapter.setSelected(view)
         config.activity.invalidateOptionsMenu()
@@ -308,4 +305,16 @@ class AppNavigationController(
     }
 
     private fun str(res: Int): String = config.activity.getString(res)
+}
+
+/** Resolve a theme color attribute to an ARGB int. Respects theme-level
+ *  overrides (e.g. Pastel's custom text color) and DayNight qualifiers. */
+private fun Context.resolveThemeColor(@AttrRes attr: Int): Int {
+    val tv = TypedValue()
+    theme.resolveAttribute(attr, tv, true)
+    return if (tv.resourceId != 0) {
+        androidx.core.content.ContextCompat.getColor(this, tv.resourceId)
+    } else {
+        tv.data
+    }
 }

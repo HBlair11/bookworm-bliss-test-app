@@ -103,6 +103,25 @@ class FakeBookmarkDao : BookmarkDao {
             it.bookId == bookId && it.spineIndex == spineIndex &&
                 it.bookmarkType == BookmarkEntity.TYPE_TEXT && it.snippet == snippet
         }.maxByOrNull { it.id }
+
+    override suspend fun getAll(): List<BookmarkEntity> =
+        rows.sortedByDescending { it.createdAt }
+
+    override suspend fun insertAll(bookmarks: List<BookmarkEntity>) {
+        for (bookmark in bookmarks) {
+            val id = if (bookmark.id != 0L) bookmark.id else nextId++
+            if (bookmark.id == 0L) nextId = maxOf(nextId, id + 1)
+            val stored = rows.indexOfFirst { it.id == id }
+            val row = bookmark.copy(id = id)
+            if (stored >= 0) rows[stored] = row else rows.add(row)
+        }
+        notifyChanged()
+    }
+
+    override suspend fun deleteAll() {
+        rows.clear()
+        notifyChanged()
+    }
 }
 
 class FakeHighlightDao : HighlightDao {
@@ -142,6 +161,25 @@ class FakeHighlightDao : HighlightDao {
 
     override suspend fun delete(highlight: HighlightEntity) {
         rows.removeAll { it.id == highlight.id }
+        notifyChanged()
+    }
+
+    override suspend fun getAll(): List<HighlightEntity> =
+        rows.sortedByDescending { it.createdAt }
+
+    override suspend fun insertAll(highlights: List<HighlightEntity>) {
+        for (highlight in highlights) {
+            val id = if (highlight.id != 0L) highlight.id else nextId++
+            if (highlight.id == 0L) nextId = maxOf(nextId, id + 1)
+            val stored = rows.indexOfFirst { it.id == id }
+            val row = highlight.copy(id = id)
+            if (stored >= 0) rows[stored] = row else rows.add(row)
+        }
+        notifyChanged()
+    }
+
+    override suspend fun deleteAll() {
+        rows.clear()
         notifyChanged()
     }
 }

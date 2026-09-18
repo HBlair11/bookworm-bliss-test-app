@@ -52,7 +52,6 @@ import com.epubreader.app.epub.ReaderSelectionLocator
 import com.epubreader.app.databinding.ActivityReaderBinding
 import com.epubreader.app.epub.DictionaryLookup
 import com.epubreader.app.epub.EpubBook
-import com.epubreader.app.epub.EpubParser
 import com.epubreader.app.epub.EpubResourceResolver
 import com.epubreader.app.epub.ReaderPageMapping
 import com.epubreader.app.epub.ReaderTtsController
@@ -153,6 +152,7 @@ class ReaderActivity : AppCompatActivity() {
     private lateinit var overlayController: ReaderOverlayController
     private lateinit var selectionController: ReaderSelectionController
     private lateinit var ttsUiController: ReaderTtsUiController
+    private lateinit var renderer: com.epubreader.app.ui.reader.renderer.EpubWebViewRenderer
 
     private var bookId: Long = -1L
     private var bookEntity: BookEntity? = null
@@ -321,6 +321,7 @@ class ReaderActivity : AppCompatActivity() {
         setupOverlayController()
         setupSelectionController()
         setupTtsUiController()
+        setupRenderer()
         ttsCoordinator = ReaderTtsCoordinator(applicationContext, object : ReaderTtsCoordinator.Listener {
             override fun onPlayingChanged(playing: Boolean) {
                 runOnUiThread {
@@ -916,7 +917,84 @@ class ReaderActivity : AppCompatActivity() {
     }
 
     private fun captureCurrentSelection(onCaptured: ((ReaderSelectionLocator?) -> Unit)? = null) {
-        webViewController.captureCurrentSelection(onCaptured)
+        // Route through the renderer contract. The renderer captures the
+        // selection via the WebView bridge and converts it to the canonical
+        // ReaderTextSelection. For backward compatibility with existing
+        // callers that expect ReaderSelectionLocator, we also pass the
+        // raw locator back through the webViewController.
+        if (::renderer.isInitialized) {
+            renderer.captureSelection { selection ->
+                // Convert back to locator for legacy callers
+                val locator = selection?.let { sel ->
+                    ReaderSelectionLocator(
+                        text = sel.text,
+                        spineHref = sel.spineHref,
+                        startPath = sel.startPath,
+                        startOffset = sel.startOffset,
+                        endPath = sel.endPath,
+                        endOffset = sel.endOffset,
+                        prefix = sel.prefix,
+                        suffix = sel.suffix,
+                        rectLeft = sel.rectLeft,
+                        rectTop = sel.rectTop,
+                        rectRight = sel.rectRight,
+                        rectBottom = sel.rectBottom,
+                    )
+                }
+                onCaptured?.invoke(locator)
+            }
+        } else {
+            webViewController.captureCurrentSelection(onCaptured)
+        }
+    }
+
+    /**
+     * Initialize the [EpubWebViewRenderer] — the thin adapter that implements
+     * the [ReaderRenderer] contract. This gives the UI a contract-based seam
+     * to the rendering engine, decoupling it from direct WebView manipulation.
+     */
+    private fun setupRenderer() {
+        renderer = com.epubreader.app.ui.reader.renderer.EpubWebViewRenderer(
+            webView = binding.webView,
+            webViewController = webViewController,
+            navigationController = navigationController,
+            epubProvider = { epub },
+            spineIndexProvider = { spineIndex },
+            pageCountsProvider = { chapterPageCounts },
+            currentPageProvider = { currentPageInChapter },
+            scrollRatioProvider = { currentScrollRatio },
+            settingsProvider = { currentReaderSettings() },
+            loadChapter = { index -> loadChapter(index) },
+            applySettings = { settings -> applySettingsAndReload() },
+            restorePosition = { position ->
+                // Wire through the existing restore mechanism: set the
+                // pending restore state, then load the target spine item.
+                val epub = epub ?: return@EpubWebViewRenderer
+                val target = position.clamped(epub.spine.size)
+                if (target.spineIndex != spineIndex) {
+                    restoreRatio = target.scrollRatio
+                    loadChapter(target.spineIndex)
+                } else {
+                    webViewController.evaluateJavascript(
+                        "if(window.Caesura){window.Caesura.gotoRatio(${target.scrollRatio},false);}"
+                    )
+                }
+            },
+        )
+    }
+
+    private fun currentReaderSettings(): com.epubreader.app.core.reader.ReaderSettings {
+        return com.epubreader.app.core.reader.ReaderSettings(
+            fontFamily = prefs.font,
+            fontSize = prefs.fontSize,
+            lineHeight = prefs.lineHeight,
+            margin = prefs.margin,
+            alignment = prefs.align,
+            hyphenation = prefs.hyphenation,
+            pageBottomGuard = prefs.pageBottomMargin,
+            pageTurnAnimation = prefs.pageTurnAnimation,
+            themeId = prefs.theme,
+        )
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -1541,12 +1619,11 @@ class ReaderActivity : AppCompatActivity() {
             bookEntity = entity
             val file = File(entity.path)
             if (!file.exists()) return@launch
-            val parser = EpubParser()
-            val parsed = try {
-                parser.parse(file)
-            } catch (_: Exception) {
-                null
-            } ?: return@launch
+
+            // Safe pipeline wiring via shared parse bridge (Audit Priority 6).
+            // See EpubParseBridge for the parity-check strategy.
+            val parsed = com.epubreader.app.core.epub.EpubParseBridge.parse(file)
+                ?: return@launch
             epub = parsed
             // Keep the legacy spine count synchronized for reader compatibility.
             // Home uses the embedded navigation TOC location instead of a chapter count.
@@ -2020,7 +2097,7 @@ class ReaderActivity : AppCompatActivity() {
 
     private fun captureReflowAnchor(onCaptured: (ReflowAnchor?) -> Unit) {
         val fallbackPage = currentPageInChapter
-        binding.webView.evaluateJavascript(
+        webViewController.evaluateJavascript(
             """(function(){
                 if(!window.Caesura) return '';
                 var x=(window.innerWidth||1)*0.25, y=(window.innerHeight||1)*0.5;
@@ -2152,6 +2229,7 @@ class ReaderActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        if (::renderer.isInitialized) renderer.release()
         cancelMeasurement()
         handler.removeCallbacks(progressPoller)
         handler.removeCallbacks(alphaFallback)

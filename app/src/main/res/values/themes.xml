@@ -24,11 +24,13 @@
     -->
 
     <!-- ===== BASE THEME — assigns semantic attributes =====
-         Phase 10: parent switched from DayNight to Light so the app never
-         auto-switches to a dark (Night) theme based on the system setting.
-         Only the two light app themes (Original / Pastel) are offered now;
-         the reader keeps its own always-dark chrome via Theme.Livre.Reader. ===== -->
-    <style name="Theme.Livre" parent="Theme.MaterialComponents.Light.NoActionBar">
+         Uses DayNight so the app follows the system light/dark setting.
+         Night-qualified color tokens in values-night/design_system.xml
+         override the semantic colors for dark mode. Only the Original
+         theme follows DayNight; Pastel is overridden to stay light in
+         values-night/themes.xml.
+         Layouts never need to change — they reference ?attr/livre* names. ===== -->
+    <style name="Theme.Livre" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- System bars -->
         <item name="android:statusBarColor">@color/black</item>
         <item name="android:navigationBarColor">@color/black</item>

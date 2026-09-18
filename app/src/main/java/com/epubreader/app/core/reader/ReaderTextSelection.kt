@@ -10,7 +10,8 @@ package com.epubreader.app.core.reader
  * model. This keeps the core/reader package free of any EPUB or
  * WebView dependency.
  *
- * @property text         The selected text (trimmed).
+ * @property text         The selected text (raw, untrimmed — offsets are
+ *                       based on this; use [displayText] for UI display).
  * @property spineHref    The spine item href where the selection occurred.
  * @property startPath    DOM path to the selection start (format-specific).
  * @property startOffset  Character offset at the selection start.
@@ -38,6 +39,11 @@ data class ReaderTextSelection(
     val rectBottom: Int = 0,
 ) {
     val hasRect: Boolean get() = rectRight > rectLeft && rectBottom > rectTop
+
+    /** Trimmed text for display (copy, share, define, highlight list).
+     *  The raw [text] is stored untrimmed so DOM offsets remain consistent
+     *  with the original range; display surfaces should use this. */
+    val displayText: String get() = text.trim()
 
     /** Convert to a canonical [ReaderPosition] at the selection start. */
     fun toPosition(spineIndex: Int): ReaderPosition = ReaderPosition(

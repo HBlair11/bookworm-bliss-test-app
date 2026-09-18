@@ -5,10 +5,9 @@ import android.graphics.Color
 /**
  * App theme palette — the semantic color values for a specific theme.
  *
- * Phase 10: the app theme catalog now offers exactly two themes — **Original**
- * (the existing mint/eggplant light theme) and **Pastel** (the web-app-derived
- * pink/plum light theme). Night, Sepia and High Contrast have been removed
- * from the app theme catalog per the Phase 10 spec.
+ * The app theme catalog offers two themes — **Original** (the mint/eggplant
+ * theme that follows the system Day/Night setting) and **Pastel** (the
+ * web-app-derived pink/plum theme that is always light).
  *
  * NOTE: this registry is the runtime color mirror of the XML themes in
  * themes.xml. The XML themes are what actually skin the app at runtime

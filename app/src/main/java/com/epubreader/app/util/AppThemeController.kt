@@ -8,20 +8,19 @@ import com.epubreader.app.data.PrefsManager
 /**
  * Phase 10 — runtime app-theme switching.
  *
- * The app offers two app themes: **Original** (the existing mint/eggplant
- * `Theme.EpubReader`) and **Pastel** (the web-app-derived pink/plum
- * `Theme.EpubReader.Pastel`). Night, Sepia and High Contrast are no longer
- * offered as app themes.
+ * The app offers two app themes: **Original** (the mint/eggplant
+ * `Theme.EpubReader`, which follows the system Day/Night setting via
+ * `Theme.MaterialComponents.DayNight`) and **Pastel** (the web-app-derived
+ * pink/plum `Theme.EpubReader.Pastel`, which is always light). The reader
+ * content theme ([PrefsManager.theme]) is a separate concern.
  *
  * This controller is the single entry point activities call at the very start
  * of `onCreate` (before `super.onCreate`) so the resolved theme — and therefore
- * every `?attr/livre*` token — is correct before any view is inflated. The
- * reader-content theme ([PrefsManager.theme]) is a separate concern and is not
- * touched here.
+ * every `?attr/livre*` token — is correct before any view is inflated.
  *
- * System-bar appearance is delegated to [SystemBarController], which becomes
+ * System-bar appearance is delegated to [SystemBarController], which is
  * theme-aware: Pastel paints light bars (dark icons on a pink bar); Original
- * and the reader's dark chrome paint black bars.
+ * paints black bars with light icons in both day and night modes.
  */
 object AppThemeController {
 

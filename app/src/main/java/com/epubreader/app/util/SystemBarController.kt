@@ -17,11 +17,12 @@ import com.epubreader.app.data.PrefsManager
  * cover the transparent system-bar areas without changing the existing screen
  * layouts or reader content.
  *
- * Phase 10: the bar appearance is now theme-aware. App activities pass
- * [forceDark] = false (the default) so the bars follow the selected app theme —
- * Pastel paints a light pink bar with dark icons, Original paints black bars.
- * The reader and its settings sheet pass [forceDark] = true so their static dark
- * chrome is preserved regardless of the app theme.
+ * The bar appearance is theme-aware. App activities pass [forceDark] = false
+ * (the default) so the bars follow the selected app theme — Pastel paints a
+ * light pink bar with dark icons, Original paints black bars with light icons
+ * in both day and night modes (matching the original Livre Magicae). The
+ * reader and its settings sheet pass [forceDark] = true so their static dark
+ * chrome is preserved regardless of the app theme or system dark mode.
  */
 object SystemBarController {
     private const val TOP_TAG = "livre_system_bar_top"

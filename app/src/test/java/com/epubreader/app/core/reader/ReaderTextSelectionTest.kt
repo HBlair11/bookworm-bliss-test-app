@@ -53,4 +53,33 @@ class ReaderTextSelectionTest {
         assertEquals(15, pos.charOffset)
         assertEquals("ch2.xhtml", pos.fragment)
     }
+
+    @Test
+    fun `displayText trims raw text while text preserves it`() {
+        val selection = ReaderTextSelection(
+            text = "  hello world  ",
+            spineHref = "ch1.xhtml",
+            startPath = "/html/body/p[0]",
+            startOffset = 2,
+            endPath = "/html/body/p[0]",
+            endOffset = 13,
+        )
+        assertEquals("  hello world  ", selection.text)
+        assertEquals("hello world", selection.displayText)
+    }
+
+    @Test
+    fun `fromLocator preserves raw text without trimming`() {
+        val locator = com.epubreader.app.epub.ReaderSelectionLocator(
+            text = "  raw text  ",
+            spineHref = "ch1.xhtml",
+            startPath = "/html/body/p[0]",
+            startOffset = 2,
+            endPath = "/html/body/p[0]",
+            endOffset = 11,
+        )
+        val selection = ReaderTextSelection.fromLocator(locator)
+        assertEquals("  raw text  ", selection.text)
+        assertEquals("raw text", selection.displayText)
+    }
 }
