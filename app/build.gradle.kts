@@ -1,45 +1,55 @@
+import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
 }
 
+// ---------------------------------------------------------------------
+// Release signing (production key). Read from keystore.properties, which
+// the Release workflow writes at build time from repo secrets. Locally,
+// if the file is absent, release builds simply fall back to being
+// unsigned-by-us (Gradle will still refuse to publish, but assembleDebug
+// keeps working for day-to-day dev).
+// ---------------------------------------------------------------------
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+val hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
-    namespace = "com.epubreader.app"
+    namespace = "com.bookwormbliss.app"
     compileSdk = 35
 
     defaultConfig {
         applicationId = "com.bookwormbliss.app"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
-        vectorDrawables { useSupportLibrary = true }
+        versionName = "1.0.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
 
-    val productionSigningProperties = rootProject.file("keystore.properties")
-
+    // The permanent debug keystore is injected by CI at ~/.android/debug.keystore
+    // (the same path/credentials the Android Gradle Plugin already uses by
+    // default for the "debug" signing config), so no explicit debug
+    // signingConfig override is needed here — AGP's built-in default already
+    // points at that file with alias "androiddebugkey" / password "android".
+    // See README-BUILD.md for how to generate that permanent keystore.
     signingConfigs {
-        create("permanentDebug") {
-            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
-
-        // Production release signing is opt-in and comes from the local
-        // keystore.properties file. Never commit that file or the keystore.
-        if (productionSigningProperties.exists()) {
-            val releaseProperties = Properties().apply {
-                productionSigningProperties.inputStream().use { load(it) }
-            }
-            create("productionRelease") {
-                storeFile = rootProject.file(releaseProperties.getProperty("storeFile"))
-                storePassword = releaseProperties.getProperty("storePassword")
-                keyAlias = releaseProperties.getProperty("keyAlias")
-                keyPassword = releaseProperties.getProperty("keyPassword")
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
             }
         }
     }
@@ -47,19 +57,25 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("permanentDebug")
+            applicationIdSuffix = null
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            if (productionSigningProperties.exists()) {
-                signingConfig = signingConfigs.getByName("productionRelease")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }
 
-    buildFeatures {
-        viewBinding = true
+    // Rename every output APK to bookworm-bliss.apk regardless of build type,
+    // matching the filename the CI workflows look for.
+    applicationVariants.all {
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output.outputFileName = "bookworm-bliss.apk"
+        }
     }
 
     compileOptions {
@@ -71,66 +87,58 @@ android {
         jvmTarget = "17"
     }
 
-    packaging {
-        resources {
-            excludes += setOf(
-                "/META-INF/{AL2.0,LGPL2.1}",
-                "META-INF/DEPENDENCIES",
-                "META-INF/LICENSE",
-                "META-INF/LICENSE.txt",
-                "META-INF/NOTICE",
-                "META-INF/NOTICE.txt"
-            )
-        }
+    buildFeatures {
+        compose = true
     }
 
-    // Rename every APK output (debug + release) to a single canonical name.
-    // The user installs the APK named "the-livre-magicae.apk".
-    applicationVariants.configureEach {
-        val variant = this
-        variant.outputs.configureEach {
-            // output is com.android.build.gradle.internal.api.ApkVariantOutputImpl
-            (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.outputFileName = "bookworm-bliss.apk"
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
-    implementation("androidx.activity:activity-ktx:1.9.3")
-    implementation("androidx.fragment:fragment-ktx:1.8.4")
-    implementation("androidx.documentfile:documentfile:1.0.1")
+    val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
 
-    // Room
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+    implementation("androidx.activity:activity-compose:1.9.2")
+
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.navigation:navigation-compose:2.8.1")
+
+    // Persistence: single source of truth for all library/reading data.
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // Coroutines
+    // Reader/app preferences (theme, font, layout) — single source of truth,
+    // observed reactively from every screen that needs it.
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
-    // Glide for cover loading
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    ksp("com.github.bumptech.glide:compiler:4.16.0")
+    // Lightweight, dependency-free HTML parsing for EPUB chapter markup
+    // (no network use — purely a local string/DOM parser).
+    implementation("org.jsoup:jsoup:1.18.1")
 
-    // Phase 10: Full Backup & Restore JSON serialization.
-    implementation("com.google.code.gson:gson:2.11.0")
+    // Local-file image loading for book covers extracted from EPUBs.
+    // Used only with file:// / absolute-path models — never a network URL.
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("net.sf.kxml:kxml2:2.3.0")
-    testImplementation("xmlpull:xmlpull:1.1.3.1")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test:runner:1.6.2")
-    androidTestImplementation("androidx.test:core:1.6.1")
-    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

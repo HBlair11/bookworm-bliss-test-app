@@ -1,117 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Patch v37: read-aloud background playback. FOREGROUND_SERVICE +
-         FOREGROUND_SERVICE_MEDIA_PLAYBACK keep the reader process alive
-         while the engine speaks; POST_NOTIFICATIONS shows the media
-         notification on Android 13+ (requested at runtime). -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!--
+        Intentionally no INTERNET permission and no other network permission.
+        The Bookworm Bliss is fully offline / privacy-first: every book,
+        bookmark, highlight and preference lives in on-device Room + DataStore
+        storage only. CI (android-ci.yml / release.yml) asserts this permission
+        is absent from the built APK — do not add it.
+    -->
 
     <application
-        android:name=".EpubApp"
+        android:name=".BookwormBlissApp"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.EpubReader">
+        android:theme="@style/Theme.BookwormBliss">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader">
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.BookwormBliss">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Patch 18 (Addition #3): register the app as a handler for EPUB
-                 files so the system "Open with" sheet offers The Bookworm Bliss
-                 when a user taps an .epub in a file manager or share sheet.
-                 scheme=file catches file:// URIs; scheme=content catches SAF
-                 content:// URIs from most file managers. -->
+            <!-- Let the OS offer The Bookworm Bliss as an .epub handler. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="content" />
-                <data android:scheme="file" />
                 <data android:mimeType="application/epub+zip" />
-                <data android:mimeType="application/epub" />
-                <data android:pathPattern=".*\\.epub" />
-                <data android:pathPattern=".*\\..*\\.epub" />
-                <data android:pathPattern=".*\\..*\\..*\\.epub" />
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".ReaderActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader.Reader" />
-
-        <!-- Patch 17 (Issue #1): full-screen reader settings activity (replaces
-             the old BottomSheet settings sheet). Same static reader chrome. -->
-        <activity
-            android:name=".ui.ReaderSettingsActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader.Settings" />
-
-        <activity
-            android:name=".BookDetailsActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader" />
-
-        <activity
-            android:name=".MetadataRefreshActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader" />
-
-        <activity
-            android:name=".ReadingNookActivity"
-            android:exported="false"
-            android:theme="@style/Theme.EpubReader" />
-
-        <activity
-            android:name=".ReadingStatsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.EpubReader" />
-
-        <!-- Patch v37: offline vocabulary (dictionary lookup history). -->
-        <activity
-            android:name=".ui.VocabularyActivity"
-            android:exported="false"
-            android:theme="@style/Theme.EpubReader" />
-
-        <activity
-            android:name=".SearchActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.EpubReader" />
-
-        <!-- Patch v37: foreground keep-alive for read-aloud so playback
-             survives backgrounding/screen-off when enabled in settings. -->
-        <service
-            android:name=".tts.ReaderTtsService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
     </application>
+
 </manifest>

@@ -1,24 +1,14 @@
-# Gradle / build artifacts
-.gradle/
-build/
-app/build/
-*/build/
 *.iml
-.kotlin/
-
-# Local SDK path (machine-specific)
-local.properties
-
-# IntelliJ / Android Studio
+.gradle/
+/local.properties
 .idea/
-*.ipr
-*.iws
-captures/
-
-# OS
 .DS_Store
-
-# Keystore (never commit signing keys)
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+keystore.properties
 *.jks
 *.keystore
-keystore.properties
+app/bookworm-bliss-release.jks

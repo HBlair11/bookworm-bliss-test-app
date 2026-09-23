@@ -39,6 +39,18 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          # Provisions a standalone `gradle` binary on PATH so we can
+          # generate the wrapper below without committing a binary
+          # gradle-wrapper.jar to the repo.
+          gradle-version: "8.9"
+
+      # ----------------------------------------------------------
+      # Gradle Wrapper (generated, not committed)
+      # ----------------------------------------------------------
+
+      - name: Generate Gradle wrapper
+        run: gradle wrapper --gradle-version 8.9 --distribution-type bin
 
       # ----------------------------------------------------------
       # Android SDK

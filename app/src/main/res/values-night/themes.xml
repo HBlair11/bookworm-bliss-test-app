@@ -1,72 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-
-    <!--
-      ============================================================
-      NIGHT THEME OVERRIDES
-      ============================================================
-      The base Theme.Livre now extends Theme.MaterialComponents.DayNight,
-      so when the system is in dark mode, Android automatically selects
-      the night-qualified color tokens from values-night/design_system.xml.
-      This gives the Original theme proper dark mode: eggplant background,
-      mint text, plum surfaces — matching the original Livre Magicae.
-
-      Pastel is a deliberately light theme. In dark mode we override it
-      here to keep its light pink/plum palette, so Pastel users always
-      see the light pastel UI regardless of the system dark-mode setting.
-
-      The reader chrome is unaffected: Theme.Livre.Reader sets its own
-      colors explicitly (always dark eggplant/plum/white), independent
-      of app day/night.
-      ============================================================
-    -->
-
-    <!--
-      Pastel override: re-apply all Pastel light color values so the
-      Pastel theme stays light even when the system is in dark mode.
-      Without this, DayNight would pull in the dark color tokens from
-      values-night/design_system.xml and Pastel would turn dark.
-    -->
-    <style name="Theme.Livre.App.Pastel" parent="Theme.Livre.App">
-        <!-- Material color slots (re-applied to stay light) -->
-        <item name="colorPrimary">@color/pastel_accent</item>
-        <item name="colorPrimaryVariant">@color/pastel_accent_dark</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/pastel_secondary</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <item name="android:colorBackground">@color/pastel_light_bg</item>
-        <item name="colorSurface">@color/pastel_light_surface</item>
-        <item name="colorOnSurface">@color/pastel_light_text</item>
-
-        <!-- Semantic text (re-applied to stay light) -->
-        <item name="android:textColorPrimary">@color/pastel_light_text</item>
-        <item name="android:textColorSecondary">@color/pastel_light_text_muted</item>
-
-        <!-- Custom semantic livre* tokens (re-applied to stay light) -->
-        <item name="livreColorTextPrimary">@color/pastel_light_text</item>
-        <item name="livreColorTextSecondary">@color/pastel_light_text_muted</item>
-        <item name="livreColorTextTertiary">@color/pastel_light_text_faint</item>
-        <item name="livreColorSurfaceVariant">@color/pastel_light_surface_alt</item>
-        <item name="livreColorDivider">@color/pastel_light_border</item>
-        <item name="livreColorAccent">@color/pastel_accent</item>
-        <item name="livreColorError">@color/pastel_accent_dark</item>
-        <item name="livreColorSuccess">@color/pastel_pop2</item>
-        <item name="livreColorDisabled">@color/pastel_light_text_faint</item>
-
-        <!-- Reader content tokens (re-applied to stay light) -->
-        <item name="livreColorReaderBackground">@color/pastel_surface_alt2</item>
-        <item name="livreColorReaderText">@color/pastel_light_text</item>
-        <item name="livreColorReaderLink">@color/pastel_pop2</item>
-        <item name="livreColorReaderSelection">@color/pastel_pop</item>
-
-        <!-- Window + system bars: light status bar (dark icons) -->
-        <item name="android:windowBackground">@color/pastel_light_bg</item>
-        <item name="android:statusBarColor">@color/pastel_light_bg</item>
-        <item name="android:navigationBarColor">@color/pastel_light_bg</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
-        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
-        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+    <style name="Theme.BookwormBliss" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background_dark</item>
+        <item name="android:statusBarColor">@color/window_background_dark</item>
+        <item name="android:navigationBarColor">@color/window_background_dark</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
     </style>
-
 </resources>
