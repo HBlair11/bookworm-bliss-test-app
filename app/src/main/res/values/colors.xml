@@ -7,6 +7,6 @@
         if you change the palette there, update these two lines to match.
         Everything else in the app reads colors from Color.kt, not from here.
     -->
-    <color name="window_background">#FFFEEF2</color>
+    <color name="window_background">#FFFFEEF2</color>
     <color name="window_background_dark">#FF211A1E</color>
 </resources>
