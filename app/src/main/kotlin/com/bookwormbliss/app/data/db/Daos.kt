@@ -13,6 +13,8 @@ import com.bookwormbliss.app.data.model.DictionaryHistoryEntity
 import com.bookwormbliss.app.data.model.HighlightEntity
 import com.bookwormbliss.app.data.model.ReadingSessionEntity
 import com.bookwormbliss.app.data.model.ReadingStampEntity
+import com.bookwormbliss.app.data.model.SearchHistoryEntity
+import com.bookwormbliss.app.data.model.WatchedFolderEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -34,6 +36,18 @@ interface BookDao {
 
     @Query("SELECT * FROM books WHERE checksum = :checksum LIMIT 1")
     suspend fun findByChecksum(checksum: String): BookEntity?
+
+    @Query("SELECT * FROM books WHERE sourceUri = :sourceUri LIMIT 1")
+    suspend fun findBySourceUri(sourceUri: String): BookEntity?
+
+    @Query("SELECT * FROM books WHERE watchedFolderId = :folderId")
+    suspend fun findByFolder(folderId: String): List<BookEntity>
+
+    @Query("SELECT * FROM books WHERE author = :author ORDER BY sortTitle ASC")
+    fun observeByAuthor(author: String): Flow<List<BookEntity>>
+
+    @Query("SELECT * FROM books WHERE series = :series ORDER BY seriesIndex ASC, sortTitle ASC")
+    fun observeBySeries(series: String): Flow<List<BookEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(book: BookEntity)
@@ -115,4 +129,34 @@ interface DictionaryHistoryDao {
 
     @Delete
     suspend fun delete(entry: DictionaryHistoryEntity)
+}
+
+@Dao
+interface WatchedFolderDao {
+    @Query("SELECT * FROM watched_folders ORDER BY addedDate DESC")
+    fun observeAll(): Flow<List<WatchedFolderEntity>>
+
+    @Query("SELECT * FROM watched_folders WHERE id = :id")
+    suspend fun getById(id: String): WatchedFolderEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(folder: WatchedFolderEntity)
+
+    @Delete
+    suspend fun delete(folder: WatchedFolderEntity)
+}
+
+@Dao
+interface SearchHistoryDao {
+    @Query("SELECT term FROM search_history ORDER BY lastUsed DESC LIMIT 12")
+    fun observeRecent(): Flow<List<String>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(entry: SearchHistoryEntity)
+
+    @Query("DELETE FROM search_history WHERE term = :term")
+    suspend fun delete(term: String)
+
+    @Query("DELETE FROM search_history")
+    suspend fun clear()
 }

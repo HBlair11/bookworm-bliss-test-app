@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 
 package com.bookwormbliss.app.ui.screens.reader
 
@@ -16,6 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -24,6 +30,8 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,8 +42,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -46,9 +56,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bookwormbliss.app.R
 import com.bookwormbliss.app.data.model.AlignOption
 import com.bookwormbliss.app.data.model.FontId
+import com.bookwormbliss.app.data.model.ReadingMode
 import com.bookwormbliss.app.ui.theme.ReaderFontId
 import com.bookwormbliss.app.ui.theme.ReaderThemeId
 import com.bookwormbliss.app.ui.theme.dimens
+import com.bookwormbliss.app.ui.theme.radii
 
 @Composable
 fun ReaderScreen(
@@ -74,6 +86,7 @@ fun ReaderScreen(
         AlignOption.CENTER -> TextAlign.Center
         AlignOption.RIGHT -> TextAlign.End
     }
+    val isHorizontal = state.prefs.readingMode == ReadingMode.HORIZONTAL
 
     Column(modifier.fillMaxSize().background(readerTheme.bg)) {
         TopAppBar(
@@ -111,20 +124,11 @@ fun ReaderScreen(
             ),
         )
 
-        LazyColumn(
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = state.prefs.margin.dp, vertical = dimens.lg),
-            verticalArrangement = Arrangement.spacedBy(dimens.md),
-        ) {
-            items(state.paragraphs) { paragraph ->
-                Text(
-                    text = paragraph,
-                    color = readerTheme.ink,
-                    fontFamily = fontFamily,
-                    fontSize = state.prefs.fontSize.sp,
-                    lineHeight = (state.prefs.fontSize * state.prefs.lineHeight).sp,
-                    textAlign = textAlign,
-                )
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            if (isHorizontal) {
+                HorizontalReaderPager(state = state, viewModel = viewModel, readerTheme = readerTheme, fontFamily = fontFamily, textAlign = textAlign)
+            } else {
+                VerticalReaderScroll(state = state, readerTheme = readerTheme, fontFamily = fontFamily, textAlign = textAlign)
             }
         }
 
@@ -140,7 +144,11 @@ fun ReaderScreen(
                 Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = readerTheme.ink)
             }
             Text(
-                "${((if (state.chapters.size > 1) state.currentIndex.toFloat() / (state.chapters.size - 1) else 1f) * 100).toInt()}%",
+                text = if (isHorizontal && state.pages.isNotEmpty()) {
+                    "${state.currentPageIndex + 1} / ${state.pages.size}"
+                } else {
+                    "${((if (state.chapters.size > 1) state.currentIndex.toFloat() / (state.chapters.size - 1) else 1f) * 100).toInt()}%"
+                },
                 color = readerTheme.ink,
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.align(Alignment.CenterVertically),
@@ -176,8 +184,105 @@ fun ReaderScreen(
                 onLineHeightChange = { lh -> viewModel.updatePrefs { it.copy(lineHeight = lh) } },
                 onThemeChange = { theme -> viewModel.updatePrefs { it.copy(theme = theme) } },
                 onFontChange = { font -> viewModel.updatePrefs { it.copy(font = font) } },
+                onReadingModeChange = { mode -> viewModel.updatePrefs { it.copy(readingMode = mode) } },
             )
         }
+    }
+}
+
+@Composable
+private fun VerticalReaderScroll(
+    state: ReaderUiState,
+    readerTheme: ReaderThemeId,
+    fontFamily: androidx.compose.ui.text.font.FontFamily,
+    textAlign: TextAlign,
+) {
+    val dimens = MaterialTheme.dimens
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = state.prefs.margin.dp, vertical = dimens.lg),
+        verticalArrangement = Arrangement.spacedBy(dimens.md),
+    ) {
+        items(state.paragraphs) { paragraph ->
+            Text(
+                text = paragraph,
+                color = readerTheme.ink,
+                fontFamily = fontFamily,
+                fontSize = state.prefs.fontSize.sp,
+                lineHeight = (state.prefs.fontSize * state.prefs.lineHeight).sp,
+                textAlign = textAlign,
+            )
+        }
+    }
+}
+
+/**
+ * Horizontal, swipeable paging mode. Pages are pre-computed character-count
+ * chunks of the current chapter's paragraphs (see ReaderViewModel.pagesFor)
+ * rather than a true measured layout — good enough for a real page-turn
+ * feel, but a page boundary may not land exactly where it would in a
+ * pixel-measured renderer.
+ */
+@Composable
+private fun HorizontalReaderPager(
+    state: ReaderUiState,
+    viewModel: ReaderViewModel,
+    readerTheme: ReaderThemeId,
+    fontFamily: androidx.compose.ui.text.font.FontFamily,
+    textAlign: TextAlign,
+) {
+    val dimens = MaterialTheme.dimens
+    if (state.pages.isEmpty()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        return
+    }
+    val pagerState = rememberPagerState(initialPage = state.currentPageIndex) { state.pages.size }
+
+    LaunchedEffect(state.currentIndex) {
+        // A new chapter always starts at its first page.
+        if (pagerState.currentPage != 0 && pagerState.pageCount > 0) pagerState.scrollToPage(0)
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            viewModel.goToPage(page)
+        }
+    }
+
+    HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { pageIndex ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = state.prefs.margin.dp, vertical = dimens.lg),
+            verticalArrangement = Arrangement.spacedBy(dimens.md),
+        ) {
+            state.pages.getOrNull(pageIndex)?.forEach { paragraph ->
+                Text(
+                    text = paragraph,
+                    color = readerTheme.ink,
+                    fontFamily = fontFamily,
+                    fontSize = state.prefs.fontSize.sp,
+                    lineHeight = (state.prefs.fontSize * state.prefs.lineHeight).sp,
+                    textAlign = textAlign,
+                )
+            }
+        }
+    }
+
+    // Swiping past the last page of a chapter advances to the next chapter's
+    // first page; swiping before the first page goes to the previous one.
+    LaunchedEffect(pagerState, state.pages.size) {
+        snapshotFlow { Triple(pagerState.currentPage, pagerState.isScrollInProgress, state.pages.size) }
+            .collect { (page, scrolling, pageCount) ->
+                if (!scrolling && pageCount > 0) {
+                    if (page == pageCount - 1 && pagerState.currentPageOffsetFraction > 0.5f) {
+                        viewModel.advanceToNextChapterFromPager()
+                    } else if (page == 0 && pagerState.currentPageOffsetFraction < -0.5f) {
+                        viewModel.goToPreviousChapterFromPager()
+                    }
+                }
+            }
     }
 }
 
@@ -188,9 +293,29 @@ private fun ReaderSettingsSheetContent(
     onLineHeightChange: (Float) -> Unit,
     onThemeChange: (com.bookwormbliss.app.data.model.ThemeId) -> Unit,
     onFontChange: (FontId) -> Unit,
+    onReadingModeChange: (ReadingMode) -> Unit,
 ) {
     val dimens = MaterialTheme.dimens
     Column(Modifier.padding(dimens.lg)) {
+        Text(stringResource(R.string.reader_scroll_direction), style = MaterialTheme.typography.titleSmall)
+        Row(
+            modifier = Modifier.padding(vertical = dimens.xs),
+            horizontalArrangement = Arrangement.spacedBy(dimens.sm),
+        ) {
+            ReadingModeChip(
+                label = stringResource(R.string.reader_mode_horizontal),
+                icon = Icons.Filled.SwapHoriz,
+                selected = prefs.readingMode == ReadingMode.HORIZONTAL,
+                onClick = { onReadingModeChange(ReadingMode.HORIZONTAL) },
+            )
+            ReadingModeChip(
+                label = stringResource(R.string.reader_mode_vertical),
+                icon = Icons.Filled.SwapVert,
+                selected = prefs.readingMode == ReadingMode.VERTICAL,
+                onClick = { onReadingModeChange(ReadingMode.VERTICAL) },
+            )
+        }
+
         Text(stringResource(R.string.reader_font_size), style = MaterialTheme.typography.titleSmall)
         Slider(
             value = prefs.fontSize.toFloat(),
@@ -208,16 +333,16 @@ private fun ReaderSettingsSheetContent(
             horizontalArrangement = Arrangement.spacedBy(dimens.sm),
             modifier = Modifier.padding(vertical = dimens.xs),
         ) {
-            com.bookwormbliss.app.ui.theme.ReaderThemeId.entries.forEach { theme ->
+            ReaderThemeId.entries.forEach { theme ->
                 val isSelected = theme.name == prefs.theme.name
                 Box(
                     modifier = Modifier
                         .size(if (isSelected) 36.dp else 32.dp)
-                        .background(theme.bg, androidx.compose.foundation.shape.CircleShape)
+                        .background(theme.bg, CircleShape)
                         .border(
                             width = if (isSelected) 2.dp else 1.dp,
                             color = theme.ink,
-                            shape = androidx.compose.foundation.shape.CircleShape,
+                            shape = CircleShape,
                         )
                         .clickable {
                             onThemeChange(com.bookwormbliss.app.data.model.ThemeId.valueOf(theme.name))
@@ -227,7 +352,7 @@ private fun ReaderSettingsSheetContent(
         }
         Text(stringResource(R.string.reader_font), style = MaterialTheme.typography.titleSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(dimens.sm)) {
-            com.bookwormbliss.app.ui.theme.ReaderFontId.entries.forEach { font ->
+            ReaderFontId.entries.forEach { font ->
                 val isSelected = runCatching { FontId.valueOf(font.name) }.getOrNull() == prefs.font
                 Text(
                     text = font.label,
@@ -239,5 +364,29 @@ private fun ReaderSettingsSheetContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ReadingModeChip(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .background(
+                if (selected) colors.primary else colors.surfaceVariant,
+                RoundedCornerShape(MaterialTheme.radii.pill),
+            )
+            .padding(horizontal = MaterialTheme.dimens.md, vertical = MaterialTheme.dimens.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.dimens.xxs),
+    ) {
+        Icon(icon, contentDescription = null, tint = if (selected) colors.onPrimary else colors.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Text(label, color = if (selected) colors.onPrimary else colors.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
     }
 }

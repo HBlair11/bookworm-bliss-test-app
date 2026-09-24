@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
@@ -45,11 +46,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bookwormbliss.app.R
 import com.bookwormbliss.app.ui.screens.ComingSoonScreen
+import com.bookwormbliss.app.ui.screens.authorsseries.AuthorsScreen
+import com.bookwormbliss.app.ui.screens.authorsseries.SeriesScreen
 import com.bookwormbliss.app.ui.screens.details.BookDetailsScreen
+import com.bookwormbliss.app.ui.screens.folders.ImportFolderScreen
 import com.bookwormbliss.app.ui.screens.home.HomeScreen
+import com.bookwormbliss.app.ui.screens.library.LibraryScope
 import com.bookwormbliss.app.ui.screens.library.LibraryScreen
 import com.bookwormbliss.app.ui.screens.reader.ReaderScreen
+import com.bookwormbliss.app.ui.screens.search.SearchScreen
 import com.bookwormbliss.app.ui.screens.settings.SettingsScreen
+import com.bookwormbliss.app.ui.screens.stats.StatsScreen
+import com.bookwormbliss.app.ui.screens.vocabulary.VocabularyScreen
 import com.bookwormbliss.app.ui.theme.dimens
 import kotlinx.coroutines.launch
 
@@ -61,6 +69,7 @@ private val drawerDestinations = listOf(
     DrawerDestination(Routes.FAVORITES, R.string.nav_favorites, Icons.Filled.Favorite),
     DrawerDestination(Routes.AUTHORS, R.string.nav_authors, Icons.Filled.Groups),
     DrawerDestination(Routes.SERIES, R.string.nav_series, Icons.Filled.AutoStories),
+    DrawerDestination(Routes.FOLDERS, R.string.nav_folders, Icons.Filled.CreateNewFolder),
     DrawerDestination(Routes.READING_NOOK, R.string.nav_reading_nook, Icons.Filled.Spa),
     DrawerDestination(Routes.STATS, R.string.nav_stats, Icons.Filled.Insights),
     DrawerDestination(Routes.VOCABULARY, R.string.nav_vocabulary, Icons.Filled.Translate),
@@ -82,22 +91,85 @@ fun BookwormNavGraph() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val isReaderRoute = currentRoute == Routes.READER
+    val isSearchRoute = currentRoute == Routes.SEARCH
 
     val navHost: @Composable (Modifier) -> Unit = { modifier ->
         NavHost(navController = navController, startDestination = Routes.HOME, modifier = modifier) {
             composable(Routes.HOME) {
-                HomeScreen(onOpenBook = { id -> navController.navigate(Routes.bookDetails(id)) })
+                HomeScreen(
+                    onOpenBook = { id -> navController.navigate(Routes.reader(id)) },
+                    onOpenBookDetails = { id -> navController.navigate(Routes.bookDetails(id)) },
+                    onSelectView = { view ->
+                        val route = when (view) {
+                            "reading" -> Routes.READING
+                            "library" -> Routes.LIBRARY
+                            "favorites" -> Routes.FAVORITES
+                            "authors" -> Routes.AUTHORS
+                            "series" -> Routes.SERIES
+                            else -> Routes.LIBRARY
+                        }
+                        navController.navigate(route)
+                    },
+                    onSelectAuthor = { name -> navController.navigate(Routes.authorDetail(name)) },
+                    onSelectSeries = { name -> navController.navigate(Routes.seriesDetail(name)) },
+                )
             }
             composable(Routes.LIBRARY) {
                 LibraryScreen(onOpenBook = { id -> navController.navigate(Routes.bookDetails(id)) })
             }
-            composable(Routes.FAVORITES) { ComingSoonScreen(R.string.coming_soon_authors) }
-            composable(Routes.AUTHORS) { ComingSoonScreen(R.string.coming_soon_authors) }
-            composable(Routes.SERIES) { ComingSoonScreen(R.string.coming_soon_series) }
+            composable(Routes.READING) {
+                LibraryScreen(
+                    onOpenBook = { id -> navController.navigate(Routes.bookDetails(id)) },
+                    scope = LibraryScope.CURRENTLY_READING,
+                    titleOverride = stringResource(R.string.nav_reading),
+                    emptyBodyOverride = "No books are currently in progress. Start reading any book from your library!",
+                )
+            }
+            composable(Routes.FAVORITES) {
+                LibraryScreen(
+                    onOpenBook = { id -> navController.navigate(Routes.bookDetails(id)) },
+                    scope = LibraryScope.FAVORITES,
+                    titleOverride = stringResource(R.string.nav_favorites),
+                    emptyBodyOverride = "No favorite books yet. Tap the heart icon on any book cover to add it here.",
+                )
+            }
+            composable(Routes.AUTHORS) {
+                AuthorsScreen(onSelectAuthor = { name -> navController.navigate(Routes.authorDetail(name)) })
+            }
+            composable(Routes.SERIES) {
+                SeriesScreen(onSelectSeries = { name -> navController.navigate(Routes.seriesDetail(name)) })
+            }
+            composable(
+                route = Routes.AUTHOR_DETAIL,
+                arguments = listOf(navArgument(Routes.ARG_AUTHOR_NAME) { type = NavType.StringType }),
+            ) { backStack ->
+                val name = android.net.Uri.decode(backStack.arguments?.getString(Routes.ARG_AUTHOR_NAME).orEmpty())
+                LibraryScreen(
+                    onOpenBook = { id -> navController.navigate(Routes.bookDetails(id)) },
+                    scope = LibraryScope.BY_AUTHOR,
+                    filterValue = name,
+                    titleOverride = name,
+                )
+            }
+            composable(
+                route = Routes.SERIES_DETAIL,
+                arguments = listOf(navArgument(Routes.ARG_SERIES_NAME) { type = NavType.StringType }),
+            ) { backStack ->
+                val name = android.net.Uri.decode(backStack.arguments?.getString(Routes.ARG_SERIES_NAME).orEmpty())
+                LibraryScreen(
+                    onOpenBook = { id -> navController.navigate(Routes.bookDetails(id)) },
+                    scope = LibraryScope.BY_SERIES,
+                    filterValue = name,
+                    titleOverride = name,
+                )
+            }
+            composable(Routes.FOLDERS) { ImportFolderScreen() }
             composable(Routes.READING_NOOK) { ComingSoonScreen(R.string.coming_soon_nook) }
-            composable(Routes.STATS) { ComingSoonScreen(R.string.coming_soon_stats) }
-            composable(Routes.VOCABULARY) { ComingSoonScreen(R.string.coming_soon_vocabulary) }
-            composable(Routes.SEARCH) { ComingSoonScreen(R.string.coming_soon_search) }
+            composable(Routes.STATS) { StatsScreen() }
+            composable(Routes.VOCABULARY) { VocabularyScreen() }
+            composable(Routes.SEARCH) {
+                SearchScreen(onOpenBook = { id -> navController.navigate(Routes.reader(id)) })
+            }
             composable(Routes.SETTINGS) { SettingsScreen() }
             composable(
                 route = Routes.BOOK_DETAILS,
@@ -161,8 +233,10 @@ fun BookwormNavGraph() {
                             }
                         },
                         actions = {
-                            IconButton(onClick = { navController.navigate(Routes.SEARCH) }) {
-                                Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.nav_search))
+                            if (!isSearchRoute) {
+                                IconButton(onClick = { navController.navigate(Routes.SEARCH) }) {
+                                    Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.nav_search))
+                                }
                             }
                         },
                     )
@@ -182,7 +256,10 @@ private fun titleFor(route: String?): String = when (route) {
     Routes.VOCABULARY -> stringResource(R.string.nav_vocabulary)
     Routes.AUTHORS -> stringResource(R.string.nav_authors)
     Routes.SERIES -> stringResource(R.string.nav_series)
+    Routes.FOLDERS -> stringResource(R.string.nav_folders)
     Routes.READING_NOOK -> stringResource(R.string.nav_reading_nook)
     Routes.SEARCH -> stringResource(R.string.nav_search)
+    Routes.READING -> stringResource(R.string.nav_reading)
+    Routes.FAVORITES -> stringResource(R.string.nav_favorites)
     else -> stringResource(R.string.app_name)
 }

@@ -3,7 +3,6 @@ package com.bookwormbliss.app.ui.screens.reader
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bookwormbliss.app.data.model.BookEntity
@@ -24,6 +23,16 @@ data class ReaderUiState(
     val chapters: List<EpubChapter> = emptyList(),
     val currentIndex: Int = 0,
     val paragraphs: List<String> = emptyList(),
+    /**
+     * [paragraphs] grouped into screen-sized chunks for horizontal paging
+     * mode (see ReaderPreferences.readingMode). Recomputed whenever the
+     * chapter changes or a layout-affecting preference (font size, margin,
+     * line height) changes. This is a character-count heuristic rather than
+     * a true text-layout measurement, so page breaks are approximate, not
+     * pixel-exact.
+     */
+    val pages: List<List<String>> = emptyList(),
+    val currentPageIndex: Int = 0,
     val bookmarks: List<BookmarkEntity> = emptyList(),
     val prefs: ReaderPreferences = ReaderPreferences(),
     val isLoading: Boolean = true,
@@ -51,25 +60,38 @@ class ReaderViewModel(
             val prefsFlow = preferences.preferencesFlow
             kotlinx.coroutines.flow.combine(book, bookmarks, prefsFlow) { b, bm, p -> Triple(b, bm, p) }
                 .collect { (b, bm, p) ->
-                    if (b != null && _uiState.value.chapters.isEmpty()) {
+                    val state = _uiState.value
+                    if (b != null && state.chapters.isEmpty()) {
                         val chapters = repository.chaptersFor(b)
                         val startIndex = b.spineIndex.coerceIn(0, (chapters.size - 1).coerceAtLeast(0))
-                        _uiState.value = _uiState.value.copy(
+                        val paragraphs = paragraphsFor(chapters.getOrNull(startIndex))
+                        _uiState.value = state.copy(
                             book = b,
                             chapters = chapters,
                             currentIndex = startIndex,
-                            paragraphs = paragraphsFor(chapters.getOrNull(startIndex)),
+                            paragraphs = paragraphs,
+                            pages = pagesFor(paragraphs, p),
                             bookmarks = bm,
                             prefs = p,
                             isLoading = false,
                         )
                         repository.markOpened(b)
                     } else {
-                        _uiState.value = _uiState.value.copy(book = b ?: _uiState.value.book, bookmarks = bm, prefs = p)
+                        val layoutChanged = layoutAffectingPrefsChanged(state.prefs, p)
+                        _uiState.value = state.copy(
+                            book = b ?: state.book,
+                            bookmarks = bm,
+                            prefs = p,
+                            pages = if (layoutChanged) pagesFor(state.paragraphs, p) else state.pages,
+                            currentPageIndex = if (layoutChanged) 0 else state.currentPageIndex,
+                        )
                     }
                 }
         }
     }
+
+    private fun layoutAffectingPrefsChanged(old: ReaderPreferences, new: ReaderPreferences): Boolean =
+        old.fontSize != new.fontSize || old.margin != new.margin || old.lineHeight != new.lineHeight
 
     private fun paragraphsFor(chapter: EpubChapter?): List<String> {
         chapter ?: return emptyList()
@@ -79,16 +101,76 @@ class ReaderViewModel(
         return paragraphs.ifEmpty { chapter.text.split(Regex("\\n{2,}")).filter { it.isNotBlank() } }
     }
 
+    /**
+     * Buckets [paragraphs] into pages sized by a rough characters-per-screen
+     * budget derived from font size and margin — bigger font/margins mean
+     * fewer characters fit, so pages get shorter. A paragraph is never split
+     * across two pages (each page is a whole number of paragraphs), and an
+     * unusually long single paragraph still gets its own page rather than
+     * being dropped.
+     */
+    private fun pagesFor(paragraphs: List<String>, prefs: ReaderPreferences): List<List<String>> {
+        if (paragraphs.isEmpty()) return emptyList()
+        val charsPerPage = charBudget(prefs)
+        val pages = mutableListOf<List<String>>()
+        var current = mutableListOf<String>()
+        var currentChars = 0
+        for (p in paragraphs) {
+            if (current.isNotEmpty() && currentChars + p.length > charsPerPage) {
+                pages += current
+                current = mutableListOf()
+                currentChars = 0
+            }
+            current += p
+            currentChars += p.length
+        }
+        if (current.isNotEmpty()) pages += current
+        return pages
+    }
+
+    private fun charBudget(prefs: ReaderPreferences): Int {
+        // Rough model: a phone screen has ~360dp*640dp of usable text area at
+        // default settings; larger font size and margins both shrink how
+        // much text fits. Tuned to feel reasonable across the font-size
+        // slider's 20..56 range rather than derived from real measurement.
+        val fontFactor = (32f / prefs.fontSize.coerceIn(20, 56)).coerceIn(0.5f, 1.8f)
+        val marginFactor = (40f / prefs.margin.coerceIn(20, 72)).coerceIn(0.7f, 1.3f)
+        val lineFactor = (1.6f / prefs.lineHeight.coerceIn(1f, 2.6f)).coerceIn(0.6f, 1.4f)
+        val base = 900
+        return (base * fontFactor * marginFactor * lineFactor).toInt().coerceIn(200, 2200)
+    }
+
     fun goToChapter(index: Int) {
         val state = _uiState.value
         val clamped = index.coerceIn(0, (state.chapters.size - 1).coerceAtLeast(0))
-        _uiState.value = state.copy(currentIndex = clamped, paragraphs = paragraphsFor(state.chapters.getOrNull(clamped)), showTocSheet = false)
+        val paragraphs = paragraphsFor(state.chapters.getOrNull(clamped))
+        _uiState.value = state.copy(
+            currentIndex = clamped,
+            paragraphs = paragraphs,
+            pages = pagesFor(paragraphs, state.prefs),
+            currentPageIndex = 0,
+            showTocSheet = false,
+        )
         persistProgress(clamped)
         tts.stop()
     }
 
     fun nextChapter() = goToChapter(_uiState.value.currentIndex + 1)
     fun previousChapter() = goToChapter(_uiState.value.currentIndex - 1)
+
+    fun goToPage(pageIndex: Int) {
+        val state = _uiState.value
+        _uiState.value = state.copy(currentPageIndex = pageIndex.coerceIn(0, (state.pages.size - 1).coerceAtLeast(0)))
+    }
+
+    /** Called by the horizontal pager when the user swipes past the last/first page of a chapter. */
+    fun advanceToNextChapterFromPager() {
+        if (_uiState.value.currentIndex < _uiState.value.chapters.lastIndex) nextChapter()
+    }
+
+    fun goToPreviousChapterFromPager() {
+        if (_uiState.value.currentIndex > 0) previousChapter()
+    }
 
     private fun persistProgress(index: Int) {
         val book = _uiState.value.book ?: return
@@ -112,7 +194,7 @@ class ReaderViewModel(
             repository.addBookmark(
                 bookId = book.id,
                 spineIndex = state.currentIndex,
-                pageInChapter = 0,
+                pageInChapter = state.currentPageIndex,
                 chapterTitle = chapter.title,
                 snippet = state.paragraphs.firstOrNull().orEmpty().take(140),
             )

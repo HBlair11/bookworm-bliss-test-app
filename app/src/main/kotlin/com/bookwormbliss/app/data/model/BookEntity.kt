@@ -44,4 +44,15 @@ data class BookEntity(
     /** Path (under app-private storage) to the imported .epub and to its parsed content JSON. */
     val epubPath: String,
     val contentPath: String,
+    /**
+     * Set only for books that came from a watched folder (see
+     * WatchedFolderEntity / FolderScanner) — the original SAF document URI
+     * they were imported from, and its lastModified at import time. Rescans
+     * use these two fields to detect a changed file and update this same
+     * row in place rather than creating a duplicate. Null for books added
+     * via the one-off "Import" file picker.
+     */
+    val sourceUri: String? = null,
+    val sourceLastModified: Long? = null,
+    val watchedFolderId: String? = null,
 )

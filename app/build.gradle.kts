@@ -135,6 +135,10 @@ dependencies {
     // Used only with file:// / absolute-path models — never a network URL.
     implementation("io.coil-kt:coil-compose:2.7.0")
 
+    // SAF folder access for "Import Folder" — walking a user-granted
+    // directory tree for .epub files without broad storage permissions.
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

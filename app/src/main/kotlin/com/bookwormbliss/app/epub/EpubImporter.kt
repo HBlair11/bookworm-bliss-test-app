@@ -20,8 +20,22 @@ class EpubImporter(private val context: Context) {
 
     data class ImportResult(val book: BookEntity?, val error: String?)
 
-    fun import(uri: Uri, displayName: String?): ImportResult {
-        val id = UUID.randomUUID().toString()
+    /**
+     * @param existing When non-null, the parsed content REPLACES this book's
+     *   files and metadata but keeps its id (and therefore its bookmarks,
+     *   highlights, favorite flag, progress, added date) — this is the path
+     *   a folder rescan takes for a file that changed on disk. When null, a
+     *   brand-new [BookEntity] with a fresh id is created.
+     */
+    fun import(
+        uri: Uri,
+        displayName: String?,
+        sourceUri: String? = null,
+        sourceLastModified: Long? = null,
+        watchedFolderId: String? = null,
+        existing: BookEntity? = null,
+    ): ImportResult {
+        val id = existing?.id ?: UUID.randomUUID().toString()
         val fileName = displayName?.takeIf { it.isNotBlank() } ?: "$id.epub"
 
         val epubFile = File(booksDir, "$id.epub")
@@ -32,6 +46,8 @@ class EpubImporter(private val context: Context) {
 
             val parsed = EpubParser.parse(epubFile, fileName)
 
+            // Replace any previous cover file for this id (extension may differ run to run).
+            existing?.coverPath?.let { runCatching { File(it).delete() } }
             val coverPath = parsed.coverBytes?.let { bytes ->
                 val coverFile = File(coversDir, "$id.jpg")
                 coverFile.writeBytes(bytes)
@@ -42,39 +58,73 @@ class EpubImporter(private val context: Context) {
             EpubContentStore.write(contentFile, parsed.chapters, parsed.toc)
 
             val now = System.currentTimeMillis()
-            val book = BookEntity(
-                id = id,
-                title = parsed.title,
-                sortTitle = sortKey(parsed.title),
-                author = parsed.author,
-                sortAuthor = sortKey(parsed.author),
-                coverPath = coverPath,
-                progress = 0f,
-                spineIndex = 0,
-                scrollRatio = 0f,
-                currentPageInChapter = 0,
-                series = parsed.series,
-                seriesIndex = parsed.seriesIndex,
-                language = parsed.language,
-                publisher = parsed.publisher,
-                description = parsed.description,
-                publishYear = parsed.publishYear,
-                subjectTags = parsed.subjectTags,
-                metadataEdited = false,
-                isCurrentlyReading = false,
-                isFavorite = false,
-                addedDate = now,
-                modifiedDate = now,
-                fileSize = parsed.fileSize,
-                sourceFilename = parsed.sourceFilename,
-                checksum = parsed.checksum,
-                spineCount = parsed.chapters.size,
-                epubPath = epubFile.absolutePath,
-                contentPath = contentFile.absolutePath,
-            )
+            val book = if (existing != null) {
+                existing.copy(
+                    title = parsed.title,
+                    sortTitle = sortKey(parsed.title),
+                    author = parsed.author,
+                    sortAuthor = sortKey(parsed.author),
+                    coverPath = coverPath,
+                    series = parsed.series,
+                    seriesIndex = parsed.seriesIndex,
+                    language = parsed.language,
+                    publisher = parsed.publisher,
+                    description = parsed.description,
+                    publishYear = parsed.publishYear,
+                    subjectTags = parsed.subjectTags,
+                    modifiedDate = now,
+                    fileSize = parsed.fileSize,
+                    checksum = parsed.checksum,
+                    spineCount = parsed.chapters.size,
+                    epubPath = epubFile.absolutePath,
+                    contentPath = contentFile.absolutePath,
+                    sourceUri = sourceUri ?: existing.sourceUri,
+                    sourceLastModified = sourceLastModified ?: existing.sourceLastModified,
+                    watchedFolderId = watchedFolderId ?: existing.watchedFolderId,
+                    // Chapter boundaries may have shifted with the new content,
+                    // so the old spine position isn't trustworthy — reset it,
+                    // but keep the progress percentage as a rough signpost.
+                    spineIndex = 0,
+                    scrollRatio = 0f,
+                )
+            } else {
+                BookEntity(
+                    id = id,
+                    title = parsed.title,
+                    sortTitle = sortKey(parsed.title),
+                    author = parsed.author,
+                    sortAuthor = sortKey(parsed.author),
+                    coverPath = coverPath,
+                    progress = 0f,
+                    spineIndex = 0,
+                    scrollRatio = 0f,
+                    currentPageInChapter = 0,
+                    series = parsed.series,
+                    seriesIndex = parsed.seriesIndex,
+                    language = parsed.language,
+                    publisher = parsed.publisher,
+                    description = parsed.description,
+                    publishYear = parsed.publishYear,
+                    subjectTags = parsed.subjectTags,
+                    metadataEdited = false,
+                    isCurrentlyReading = false,
+                    isFavorite = false,
+                    addedDate = now,
+                    modifiedDate = now,
+                    fileSize = parsed.fileSize,
+                    sourceFilename = parsed.sourceFilename,
+                    checksum = parsed.checksum,
+                    spineCount = parsed.chapters.size,
+                    epubPath = epubFile.absolutePath,
+                    contentPath = contentFile.absolutePath,
+                    sourceUri = sourceUri,
+                    sourceLastModified = sourceLastModified,
+                    watchedFolderId = watchedFolderId,
+                )
+            }
             ImportResult(book, null)
         } catch (t: Throwable) {
-            epubFile.delete()
+            if (existing == null) epubFile.delete()
             ImportResult(null, t.message ?: "Couldn't read that file — is it a valid EPUB?")
         }
     }
