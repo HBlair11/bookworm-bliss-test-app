@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.bookwormbliss.app.ui.screens.library
 
 import androidx.activity.compose.rememberLauncherForActivityResult
