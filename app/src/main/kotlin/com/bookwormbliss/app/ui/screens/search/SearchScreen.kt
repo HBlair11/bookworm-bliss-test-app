@@ -118,7 +118,7 @@ fun SearchScreen(
                     results = state.results,
                     onOpenBook = { book ->
                         viewModel.commitSearch()
-                        onOpenBook(book)
+                        onOpenBook(book.id)
                     },
                 )
             }
